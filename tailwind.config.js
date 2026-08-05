@@ -6,6 +6,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        heading: ['"Outfit"', 'sans-serif'],
+      },
       colors: {
         emerald: {
           50: '#ecfdf5',

@@ -41,6 +41,18 @@ const notificationSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
+    removeNotificationFromState: (state, action) => {
+      const id = action.payload;
+      const target = state.notifications.find((n) => n._id === id);
+      if (target && !target.isRead) {
+        state.unreadCount = Math.max(0, state.unreadCount - 1);
+      }
+      state.notifications = state.notifications.filter((n) => n._id !== id);
+    },
+    clearAllNotificationsState: (state) => {
+      state.notifications = [];
+      state.unreadCount = 0;
+    },
   },
 });
 
@@ -51,6 +63,8 @@ export const {
   markAllAsReadState,
   setNotificationLoading,
   setNotificationError,
+  removeNotificationFromState,
+  clearAllNotificationsState,
 } = notificationSlice.actions;
 
 export default notificationSlice.reducer;

@@ -12,6 +12,7 @@ const initialState = {
   loading: false,
   error: null,
   otpUserId: null,
+  resetEmail: null, // NEW: holds the email while the user is in the forgot/reset-password flow
 };
 
 const authSlice = createSlice({
@@ -33,12 +34,19 @@ const authSlice = createSlice({
       state.otpUserId = action.payload;
       state.loading = false;
     },
+
+       // NEW: tracks which email is currently going through forgot/reset password
+    setResetEmail: (state, action) => {
+      state.resetEmail = action.payload;
+      state.loading = false;
+    },
     clearCredentials: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
       state.otpUserId = null;
+         state.resetEmail = null;
       state.loading = false;
       localStorage.removeItem("token");
       localStorage.removeItem("user");
@@ -66,6 +74,7 @@ const authSlice = createSlice({
 export const {
   setCredentials,
   setOtpUserId,
+    setResetEmail,
   clearCredentials,
   setLoading,
   setError,

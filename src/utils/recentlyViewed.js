@@ -1,20 +1,46 @@
 /*
  *  RECENTLY VIEWED PRODUCTS HELPER 
- * Saves products viewed or backed out from Checkout page into localStorage,
- * allowing customers to pick up right where they left off on the Landing Page.
+ * Saves products viewed or backed out from Checkout page into localStorage per user,
+ * allowing customers to pick up right where they left off on the Landing Page after login.
  */
 
-const STORAGE_KEY = "expireoff_recently_viewed";
+const BASE_STORAGE_KEY = "expireoff_recently_viewed";
 
 /**
- * Saves a product to Recently Viewed in localStorage.
- * @param {object} product Product object to save
+ * Gets the current logged in user's ID from localStorage if available.
  */
-export const saveRecentlyViewedProduct = (product) => {
+const getCurrentUserId = () => {
+  try {
+    const saved = localStorage.getItem("user");
+    if (!saved) return null;
+    const user = JSON.parse(saved);
+    return user?._id || null;
+  } catch (error) {
+    return null;
+  }
+};
+
+/**
+ * Generates user-specific storage key.
+ */
+const getStorageKey = (userId) => {
+  const id = userId || getCurrentUserId();
+  return id ? `${BASE_STORAGE_KEY}_${id}` : null;
+};
+
+/**
+ * Saves a product to Recently Viewed in localStorage for the logged in user.
+ * @param {object} product Product object to save
+ * @param {string} [userId] Optional user ID
+ */
+export const saveRecentlyViewedProduct = (product, userId) => {
   if (!product || !product._id) return;
 
+  const storageKey = getStorageKey(userId);
+  if (!storageKey) return; // Do not save if user is not logged in
+
   try {
-    const existingList = getRecentlyViewedProducts();
+    const existingList = getRecentlyViewedProducts(userId);
 
     // Remove duplicate entry if it already exists
     const filteredList = existingList.filter((item) => item._id !== product._id);
@@ -36,31 +62,38 @@ export const saveRecentlyViewedProduct = (product) => {
       ...filteredList,
     ].slice(0, 6);
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
-  } catch (error) {
-    console.log("Failed to save recently viewed product:", error);
+    localStorage.setItem(storageKey, JSON.stringify(updatedList));
+  } catch {
+    // ignore storage errors
   }
 };
 
 /**
- * Retrieves the array of Recently Viewed products from localStorage.
+ * Retrieves the array of Recently Viewed products from localStorage for a specific user.
+ * @param {string} [userId] Optional user ID
  * @returns {Array} Array of product objects
  */
-export const getRecentlyViewedProducts = () => {
+export const getRecentlyViewedProducts = (userId) => {
+  const storageKey = getStorageKey(userId);
+  if (!storageKey) return [];
+
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const data = localStorage.getItem(storageKey);
     return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.log("Failed to load recently viewed products:", error);
+  } catch {
     return [];
   }
 };
 
 /**
- * Clears Recently Viewed products list from localStorage.
+ * Clears Recently Viewed products list from localStorage for a specific user.
+ * @param {string} [userId] Optional user ID
  */
-export const clearRecentlyViewed = () => {
+export const clearRecentlyViewed = (userId) => {
+  const storageKey = getStorageKey(userId);
+  if (!storageKey) return;
+
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(storageKey);
   } catch (error) {}
 };

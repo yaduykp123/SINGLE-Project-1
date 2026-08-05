@@ -113,6 +113,7 @@ const ProductForm = () => {
 
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [imageError, setImageError] = useState("");
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -320,16 +321,56 @@ const ProductForm = () => {
       return;
     }
 
+    if (!editingProduct && !image) {
+      const errorMsg = "Product image is required. Please upload an image.";
+      setImageError(errorMsg);
+      toast.error(errorMsg);
+      return;
+    }
+
     const data = new FormData();
     Object.keys(formData).forEach(k => data.append(k, formData[k]));
     if (image) data.append("image", image);
 
+    dispatch(setFormOpen(false));
+    dispatch(setEditingProduct(null));
+
     if (editingProduct) {
-      dispatch(updateProduct(editingProduct._id, data));
+      const updatedProduct = {
+        ...editingProduct,
+        name: formData.name,
+        brand: formData.brand || "",
+        description: formData.description || "",
+        category: formData.category,
+        marketPrice: Number(formData.marketPrice),
+        discountPrice: Number(formData.discountPrice),
+        quantity: Number(formData.quantity),
+        unit: formData.unit,
+        stock: Number(formData.stock),
+        expiryDate: formData.expiryDate,
+        ...(imagePreview ? { image: imagePreview } : {}),
+      };
+      dispatch(updateProduct(editingProduct._id, data, updatedProduct));
     } else {
-      dispatch(createProduct(data));
+      const tempProduct = {
+        _id: "temp_" + Date.now(),
+        name: formData.name,
+        brand: formData.brand || "",
+        description: formData.description || "",
+        category: formData.category,
+        marketPrice: Number(formData.marketPrice),
+        discountPrice: Number(formData.discountPrice),
+        quantity: Number(formData.quantity),
+        unit: formData.unit,
+        stock: Number(formData.stock),
+        expiryDate: formData.expiryDate,
+        image: imagePreview || "https://via.placeholder.com/300?text=Uploading...",
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      };
+      dispatch(createProduct(data, tempProduct));
     }
-  }, [formData, image, editingProduct, dispatch]);
+  }, [formData, image, imagePreview, editingProduct, dispatch]);
 
   const handleClose = useCallback(() => {
     dispatch(setFormOpen(false));
@@ -361,10 +402,10 @@ const ProductForm = () => {
 
         {/* Scrollable Form Content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 custom-scrollbar">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
             {/* Product Name */}
-            <div className="md:col-span-2 relative" ref={nameRef}>
+            <div className="sm:col-span-2 relative" ref={nameRef}>
               <FormInput
                 label="Product Name"
                 name="name"
@@ -431,7 +472,7 @@ const ProductForm = () => {
             </div>
 
             {/* Description */}
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-gray-300 mb-1.5">Description</label>
               <textarea 
                 name="description" 
@@ -611,16 +652,59 @@ const ProductForm = () => {
 
             {/* Product Image */}
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-gray-300 mb-1.5">Product Image</label>
+              <label className="block text-xs font-semibold text-gray-300 mb-1.5">
+                Product Image {!editingProduct && <span className="text-red-400 font-bold">*</span>}
+              </label>
               <div className="flex items-center gap-4">
-                {imagePreview && <img src={imagePreview} alt="" className="w-20 h-20 object-cover rounded-xl border border-gray-800 shadow-md shrink-0"/>}
-                <label className="flex-1 flex items-center justify-center gap-2 p-4 bg-gray-950/40 border border-dashed border-gray-700 hover:border-emerald-500/50 rounded-2xl cursor-pointer transition-all group">
-                  <Upload size={18} className="text-gray-400 group-hover:text-emerald-400 transition-colors"/>
-                  <span className="text-xs font-semibold text-gray-300 group-hover:text-white transition-colors">{image ? "Change Image" : "Upload Product Image"}</span>
-                  <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" onChange={handleImage} className="hidden"/>
+                {imagePreview && (
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-20 h-20 object-cover rounded-xl border border-gray-800 shadow-md shrink-0"
+                  />
+                )}
+                <label
+                  className={`flex-1 flex items-center justify-center gap-2 p-4 bg-gray-950/40 border border-dashed rounded-2xl cursor-pointer transition-all group ${
+                    imageError
+                      ? "border-red-500 bg-red-500/10 ring-2 ring-red-500/20"
+                      : "border-gray-700 hover:border-emerald-500/50"
+                  }`}
+                >
+                  <Upload
+                    size={18}
+                    className={
+                      imageError
+                        ? "text-red-400"
+                        : "text-gray-400 group-hover:text-emerald-400 transition-colors"
+                    }
+                  />
+                  <span
+                    className={`text-xs font-semibold ${
+                      imageError
+                        ? "text-red-400 font-bold"
+                        : "text-gray-300 group-hover:text-white transition-colors"
+                    }`}
+                  >
+                    {image ? "Change Image" : "Upload Product Image *"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleImage}
+                    className="hidden"
+                  />
                 </label>
               </div>
-              <p className="text-[11px] text-gray-400 mt-1">JPG, PNG, WEBP up to 5MB</p>
+              {imageError ? (
+                <div className="flex items-center gap-2 mt-2 text-xs font-bold text-red-400 bg-red-500/15 border border-red-500/40 px-3.5 py-2.5 rounded-xl shadow-lg">
+                  <AlertCircle size={16} className="shrink-0 text-red-400" />
+                  <span>{imageError}</span>
+                </div>
+              ) : (
+                <p className="text-[11px] text-gray-400 mt-1">
+                  JPG, PNG, WEBP up to 15MB
+                </p>
+              )}
             </div>
           </div>
 

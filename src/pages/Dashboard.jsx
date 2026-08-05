@@ -42,25 +42,14 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
+            <div className="inline-flex items-center gap-0 px-3 py-0 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
               
-            <svg width="0" height="0" className="absolute">
-        <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-         <stop offset="0%" stopColor="#d5d3d2ff" /> {/* Pink */}
-          <stop offset="33%" stopColor="#c06437ff" /> {/* Purple */}
-          <stop offset="66%" stopColor="#adec10ff" /> {/* Blue */}
-          <stop offset="100%" stopColor="#1be9b9ff" /> {/* Emerald */}
-        </linearGradient>
-
-        <linearGradient id="rainbow-gradients" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#50de34ff" /> {/* Pink */}
-          <stop offset="33%" stopColor="#48d52fff" /> {/* Purple */}
-          <stop offset="66%" stopColor="#5f864dff" /> {/* Blue */}
-          <stop offset="100%" stopColor="#11e69fff" /> {/* Emerald */}
-        </linearGradient>
-
-      </svg>
-            <Ban size={20} strokeWidth={2.5} style={{ stroke: "url(#rainbow-gradient)" }} > <Leaf size={23} strokeWidth={1.3} style={{ stroke: "url(#rainbow-gradients)" }}></Leaf></Ban> Shop Management
+         
+          <img 
+                src="/Images/LOGO_ExpireOFF-generated.png" 
+                alt="expireOFF Icon" 
+                className="w-20 " 
+              /> Shop Management
             </div>
             <h1 className="text-3xl font-bold text-white tracking-tight">Shop Dashboard</h1>
             <p className="text-sm text-gray-400 mt-1">Overview of your shop performance and inventory</p>

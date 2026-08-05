@@ -36,24 +36,13 @@ const Reminders = () => {
 
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
-            <svg width="0" height="0" className="absolute">
-        <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-         <stop offset="0%" stopColor="#d5d3d2ff" /> {/* Pink */}
-          <stop offset="33%" stopColor="#c06437ff" /> {/* Purple */}
-          <stop offset="66%" stopColor="#adec10ff" /> {/* Blue */}
-          <stop offset="100%" stopColor="#1be9b9ff" /> {/* Emerald */}
-        </linearGradient>
-
-        <linearGradient id="rainbow-gradients" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#50de34ff" /> {/* Pink */}
-          <stop offset="33%" stopColor="#48d52fff" /> {/* Purple */}
-          <stop offset="66%" stopColor="#5f864dff" /> {/* Blue */}
-          <stop offset="100%" stopColor="#11e69fff" /> {/* Emerald */}
-        </linearGradient>
-
-      </svg>
-            <Ban size={20} strokeWidth={2.5} style={{ stroke: "url(#rainbow-gradient)" }} > <Leaf size={23} strokeWidth={1.3} style={{ stroke: "url(#rainbow-gradients)" }}></Leaf></Ban> Expiry Tracker
+          <div className="inline-flex items-center gap-1 px-3 py-0 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
+            <img 
+              src="/Images/LOGO_ExpireOFF-generated.png" 
+              alt="expireOFF Icon" 
+              className="w-20  object-contain shrink-0" 
+            />
+            Expiry Tracker
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
             <Clock size={28} className="text-emerald-400" />

@@ -26,12 +26,12 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
-  // ✅ Always fetch products
+  //  Always fetch products
   useEffect(() => {
     dispatch(fetchProducts(user?.longitude || 0, user?.latitude || 0, selectedCategory));
   }, [dispatch, user?.longitude, user?.latitude, selectedCategory]);
 
-  // ✅ Comprehensive Category & Discount Filtering Logic
+  //  Comprehensive Category & Discount Filtering Logic
   const filteredProducts = useMemo(() => {
     let result = products;
 
@@ -109,26 +109,13 @@ const Products = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
-              <svg width="0" height="0" className="absolute">
-                <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#d5d3d2ff" />
-                  <stop offset="33%" stopColor="#c06437ff" />
-                  <stop offset="66%" stopColor="#adec10ff" />
-                  <stop offset="100%" stopColor="#1be9b9ff" />
-                </linearGradient>
-
-                <linearGradient id="rainbow-gradients" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#50de34ff" />
-                  <stop offset="33%" stopColor="#48d52fff" />
-                  <stop offset="66%" stopColor="#5f864dff" />
-                  <stop offset="100%" stopColor="#11e69fff" />
-                </linearGradient>
-              </svg>
-              <Ban size={20} strokeWidth={2.5} style={{ stroke: "url(#rainbow-gradient)" }}>
-                <Leaf size={23} strokeWidth={1.3} style={{ stroke: "url(#rainbow-gradients)" }} />
-              </Ban>
-              Marketplace
+            <div className="inline-flex items-center gap-1 px-3 py-0 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
+              <img 
+                src="/Images/LOGO_ExpireOFF-generated.png" 
+                alt="expireOFF Icon" 
+                className="w-20 object-contain shrink-0" 
+              />
+              Market Place
             </div>
             <h1 className="text-3xl font-bold text-white tracking-tight">Products Near You</h1>
             <p className="text-sm text-gray-400 flex items-center gap-1.5 mt-1 font-medium">

@@ -10,15 +10,21 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const [recentlyViewed, setRecentlyViewed] = useState([]);
 
-  // Load recently viewed products from localStorage on mount
+  // Load recently viewed products from localStorage only for logged-in non-shop users
   useEffect(() => {
-    const items = getRecentlyViewedProducts();
-    setRecentlyViewed(items);
-  }, []);
+    if (user && user?._id && user?.accountType !== "shop" && !user?.isAdmin) {
+      const items = getRecentlyViewedProducts(user._id);
+      setRecentlyViewed(items);
+    } else {
+      setRecentlyViewed([]);
+    }
+  }, [user]);
 
   const handleClearHistory = () => {
-    clearRecentlyViewed();
-    setRecentlyViewed([]);
+    if (user?._id) {
+      clearRecentlyViewed(user._id);
+      setRecentlyViewed([]);
+    }
   };
 
   const handleGetStarted = () => {
@@ -51,27 +57,14 @@ const LandingPage = () => {
         
         <div className="max-w-4xl mx-auto text-center relative z-10">
           {/* Subtle Pill Tag */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-6 backdrop-blur-md">
-            <svg width="0" height="0" className="absolute">
-              <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#d5d3d2ff" />
-                <stop offset="33%" stopColor="#c06437ff" />
-                <stop offset="66%" stopColor="#adec10ff" />
-                <stop offset="100%" stopColor="#1be9b9ff" />
-              </linearGradient>
-
-              <linearGradient id="rainbow-gradients" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#50de34ff" />
-                <stop offset="33%" stopColor="#48d52fff" />
-                <stop offset="66%" stopColor="#5f864dff" />
-                <stop offset="100%" stopColor="#11e69fff" />
-              </linearGradient>
-            </svg>
-            <Ban size={20} strokeWidth={2.5} style={{ stroke: "url(#rainbow-gradient)" }}>
-              <Leaf size={23} strokeWidth={1.3} style={{ stroke: "url(#rainbow-gradients)" }} />
-            </Ban>
-            Smart Community Food Sharing
-          </div>
+ <div className="inline-flex items-center gap-3 px-4 py-0 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-6 backdrop-blur-md">
+  <img 
+    src="/Images/LOGO_ExpireOFF-generated.png" 
+    alt="expireOFF Icon" 
+    className="w-15 h-9 object-contain shrink-0" 
+  /> 
+  <span>Smart Community Food Sharing</span>
+</div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
             Save Food, <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">Save Money</span>
@@ -125,7 +118,7 @@ const LandingPage = () => {
       </div>
 
       {/* 🛒 👀 RECENTLY VIEWED PRODUCTS (Household Buyers Only) */}
-      {recentlyViewed.length > 0 && user?.accountType !== "shop" && !user?.isAdmin && (
+      {recentlyViewed.length > 0 && user && user?.accountType !== "shop" && !user?.isAdmin && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-gray-800/60">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -147,7 +140,7 @@ const LandingPage = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
             {recentlyViewed.map((item) => {
               const discountPercent = Math.round(
                 ((item.marketPrice - item.discountPrice) / item.marketPrice) * 100

@@ -1,13 +1,7 @@
 import axiosInstance from "../../api/axiosInstance";
-import {
-  setMyOrders,
-  setReceivedOrders,
-  addOrder,
-  updateOrderStatusInState,
-  setOrderLoading,
-  setOrderError,
-} from "../slices/orderSlice";
+import { setMyOrders, setReceivedOrders, addOrder,  updateOrderStatusInState, setOrderLoading, setOrderError, removeOrderFromState, clearMyOrdersFromState} from "../slices/orderSlice";
 import toast from "react-hot-toast";
+import { fetchCart } from "./cartThunks.js";
 
 const cache = {
   myOrders: { data: null, timestamp: 0 },
@@ -16,10 +10,10 @@ const cache = {
 const CACHE_DURATION = 30 * 1000;
 
 // Fetch my orders (as buyer) — WITH CACHE
-export const fetchMyOrders = () => async (dispatch) => {
+export const fetchMyOrders = (force = false) => async (dispatch) => {
   const now = Date.now();
   
-  if (cache.myOrders.data && (now - cache.myOrders.timestamp) < CACHE_DURATION) {
+  if (!force && cache.myOrders.data && (now - cache.myOrders.timestamp) < CACHE_DURATION) {
     dispatch(setMyOrders(cache.myOrders.data));
     return;
   }
@@ -35,10 +29,10 @@ export const fetchMyOrders = () => async (dispatch) => {
 };
 
 // Fetch received orders (as seller) — WITH CACHE
-export const fetchReceivedOrders = () => async (dispatch) => {
+export const fetchReceivedOrders = (force = false) => async (dispatch) => {
   const now = Date.now();
   
-  if (cache.receivedOrders.data && (now - cache.receivedOrders.timestamp) < CACHE_DURATION) {
+  if (!force && cache.receivedOrders.data && (now - cache.receivedOrders.timestamp) < CACHE_DURATION) {
     dispatch(setReceivedOrders(cache.receivedOrders.data));
     return;
   }
@@ -69,7 +63,11 @@ export const verifyAndPlaceOrder = (paymentData) => async (dispatch) => {
   try {
     const { data } = await axiosInstance.post("/orders/verify-payment", paymentData);
     dispatch(addOrder(data.order));
-    invalidateOrderCache(); // ✅ Clear cache
+    invalidateOrderCache();
+    
+    // ✅ Refresh cart so the navbar badge updates immediately
+    dispatch(fetchCart());
+    
     toast.success("Order placed successfully!");
     return data.order;
   } catch (error) {
@@ -87,5 +85,29 @@ export const updateOrderStatus = (orderId, status) => async (dispatch) => {
     toast.success(`Order status updated to ${status}.`);
   } catch (error) {
     toast.error("Unable to update order status. Please try again.");
+  }
+};
+
+// Clear order history (cancelled or all)
+export const clearOrdersThunk = (mode = "cancelled") => async (dispatch) => {
+  try {
+    await axiosInstance.delete(`/orders/clear?mode=${mode}`);
+    dispatch(clearMyOrdersFromState(mode));
+    invalidateOrderCache();
+    toast.success("Cancelled orders cleared!");
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to clear cancelled orders.");
+  }
+};
+
+// Delete single order
+export const deleteOrderThunk = (orderId) => async (dispatch) => {
+  try {
+    await axiosInstance.delete(`/orders/${orderId}`);
+    dispatch(removeOrderFromState(orderId));
+    invalidateOrderCache();
+    toast.success("Order removed from history.");
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to remove order.");
   }
 };

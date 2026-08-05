@@ -40,13 +40,14 @@ const productSlice = createSlice({
     },
     updateProductInState: (state, action) => {
       const updated = action.payload;
+      const targetId = updated.oldId || updated._id;
       state.products = state.products.map((p) =>
-        p._id === updated._id ? updated : p
+        p._id === targetId ? updated : p
       );
       state.myListings = state.myListings.map((p) =>
-        p._id === updated._id ? updated : p
+        p._id === targetId ? updated : p
       );
-      if (state.currentProduct?._id === updated._id) {
+      if (state.currentProduct?._id === targetId) {
         state.currentProduct = updated;
       }
       state.loading = false;

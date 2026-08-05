@@ -24,13 +24,10 @@ export default defineConfig({
         },
       },
     },
-    // ✅ Minify better
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
+    // ✅ Minify better with esbuild
+    minify: 'esbuild',
+    esbuild: {
+      drop: ['console', 'debugger'],
     },
     // ✅ Enable brotli compression
     brotliSize: true,

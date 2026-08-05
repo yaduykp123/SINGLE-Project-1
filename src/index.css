@@ -4,7 +4,12 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    @apply bg-gray-50 text-gray-900 antialiased subpixel-antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 }
 

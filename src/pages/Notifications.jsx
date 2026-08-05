@@ -4,8 +4,10 @@ import {
   fetchNotifications,
   markNotificationRead,
   markAllNotificationsRead,
+  deleteNotificationThunk,
+  clearAllNotificationsThunk,
 } from "../redux/thunks/notificationThunks";
-import { Bell, CheckCheck, Sparkles, Clock, ArrowRight, Check } from "lucide-react";
+import { Bell, CheckCheck, Sparkles, Clock, ArrowRight, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Notifications = () => {
@@ -26,12 +28,23 @@ const Notifications = () => {
     dispatch(markNotificationRead(id));
   };
 
+  const handleDelete = (e, id) => {
+    e.stopPropagation();
+    dispatch(deleteNotificationThunk(id));
+  };
+
+  const handleClearAll = () => {
+    if (window.confirm("Are you sure you want to clear all notifications?")) {
+      dispatch(clearAllNotificationsThunk());
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0b0f17] text-gray-100 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-6">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-800 pb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-gray-800 pb-6 gap-4">
           <div>
             <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">
               <Sparkles size={14} />
@@ -47,15 +60,28 @@ const Notifications = () => {
             </h1>
           </div>
 
-          {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllRead}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-900 border border-gray-800 hover:border-emerald-500/40 text-xs font-bold text-emerald-400 rounded-xl transition-all"
-            >
-              <CheckCheck size={16} />
-              <span>Mark all as read</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllRead}
+                className="flex items-center gap-2 px-3.5 py-2 bg-gray-900 border border-gray-800 hover:border-emerald-500/40 text-xs font-bold text-emerald-400 rounded-xl transition-all cursor-pointer"
+              >
+                <CheckCheck size={16} />
+                <span>Mark all as read</span>
+              </button>
+            )}
+
+            {notifications.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="flex items-center gap-2 px-3.5 py-2 bg-gray-900/80 border border-gray-800 hover:border-red-500/40 text-xs font-bold text-gray-400 hover:text-red-400 rounded-xl transition-all cursor-pointer"
+                title="Clear all notifications"
+              >
+                <Trash2 size={15} />
+                <span>Clear All</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Loading State */}
@@ -127,11 +153,18 @@ const Notifications = () => {
                 </div>
               </div>
 
-              {!n.isRead ? (
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0 mt-2"></span>
-              ) : (
-                <Check size={16} className="text-gray-600 shrink-0 mt-1" />
-              )}
+              <div className="flex items-center gap-2 shrink-0 mt-1">
+                {!n.isRead && (
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
+                )}
+                <button
+                  onClick={(e) => handleDelete(e, n._id)}
+                  className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer"
+                  title="Delete notification"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
           ))}
         </div>

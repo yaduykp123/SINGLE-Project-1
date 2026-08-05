@@ -95,41 +95,28 @@ const Register = () => {
   }, [formData, dispatch, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0b0f19] text-gray-100 p-4 relative overflow-hidden selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen py-6 px-4 flex items-center justify-center bg-[#0b0f19] text-gray-100 relative overflow-y-auto selection:bg-emerald-500 selection:text-white">
       {/* Background Glow Elements */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-emerald-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="bg-gray-900/60 border border-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/10">
-
-            <svg width="0" height="0" className="absolute">
-        <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-         <stop offset="0%" stopColor="#d5d3d2ff" /> {/* Pink */}
-          <stop offset="33%" stopColor="#c06437ff" /> {/* Purple */}
-          <stop offset="66%" stopColor="#adec10ff" /> {/* Blue */}
-          <stop offset="100%" stopColor="#1be9b9ff" /> {/* Emerald */}
-        </linearGradient>
-
-        <linearGradient id="rainbow-gradients" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#50de34ff" /> {/* Pink */}
-          <stop offset="33%" stopColor="#48d52fff" /> {/* Purple */}
-          <stop offset="66%" stopColor="#5f864dff" /> {/* Blue */}
-          <stop offset="100%" stopColor="#11e69fff" /> {/* Emerald */}
-        </linearGradient>
-
-      </svg>
-            <Ban size={40} strokeWidth={2.5} style={{ stroke: "url(#rainbow-gradient)" }} > <Leaf size={23} strokeWidth={1.3} style={{ stroke: "url(#rainbow-gradients)" }}></Leaf></Ban>
+      <div className="bg-gray-900/60 border border-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl p-4 sm:p-5 w-full max-w-md my-auto relative z-10">
+        <div className="text-center mb-3">
+          <div className="w-16 h-11 mx-auto">
+            <img 
+              src="/Images/LOGO_ExpireOFF-generated.png" 
+              alt="expireOFF Icon" 
+              className="w-full h-full object-contain shrink-0" 
+            />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Create Account</h1>
-          <p className="text-gray-400 text-sm mt-1">Join expireOff and prevent food waste</p>
+          <h1 className="text-xl font-bold text-white tracking-tight">Create Account</h1>
+          <p className="text-gray-400 text-xs mt-0.5">Join expireOff and prevent food waste</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-2.5" noValidate>
           <div>
-            <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Full Name</label>
+            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-1">Full Name</label>
             <div className="relative">
-              <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 name="fullName"
@@ -138,157 +125,161 @@ const Register = () => {
                 onBlur={handleBlur}
                 placeholder="John Doe"
                 autoComplete="off"
-                className={`w-full px-4 py-3 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-11 text-gray-200 placeholder-gray-500 transition-all ${
+                className={`w-full px-3.5 py-2 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-9 text-xs sm:text-sm text-gray-200 placeholder-gray-500 transition-all ${
                   errors.fullName ? "border-red-500 focus:ring-red-500/50" : "border-gray-800 focus:border-emerald-500 focus:ring-emerald-500/20"
                 }`}
               />
             </div>
-            {errors.fullName && <p className="text-xs text-red-400 mt-1.5">{errors.fullName}</p>}
+            {errors.fullName && <p className="text-[11px] text-red-400 mt-1">{errors.fullName}</p>}
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Email</label>
-            <div className="relative">
-              <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="you@example.com"
-                autoComplete="off"
-                className={`w-full px-4 py-3 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-11 text-gray-200 placeholder-gray-500 transition-all ${
-                  errors.email ? "border-red-500 focus:ring-red-500/50" : "border-gray-800 focus:border-emerald-500 focus:ring-emerald-500/20"
-                }`}
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-1">Email</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="you@example.com"
+                  autoComplete="off"
+                  className={`w-full px-3.5 py-2 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-9 text-xs sm:text-sm text-gray-200 placeholder-gray-500 transition-all ${
+                    errors.email ? "border-red-500 focus:ring-red-500/50" : "border-gray-800 focus:border-emerald-500 focus:ring-emerald-500/20"
+                  }`}
+                />
+              </div>
+              {errors.email && <p className="text-[11px] text-red-400 mt-1">{errors.email}</p>}
             </div>
-            {errors.email && <p className="text-xs text-red-400 mt-1.5">{errors.email}</p>}
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Phone</label>
-            <div className="relative">
-              <Phone size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="9876543210"
-                autoComplete="off"
-                className={`w-full px-4 py-3 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-11 text-gray-200 placeholder-gray-500 transition-all ${
-                  errors.phone ? "border-red-500 focus:ring-red-500/50" : "border-gray-800 focus:border-emerald-500 focus:ring-emerald-500/20"
-                }`}
-              />
+            <div>
+              <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-1">Phone</label>
+              <div className="relative">
+                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="9876543210"
+                  autoComplete="off"
+                  className={`w-full px-3.5 py-2 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-9 text-xs sm:text-sm text-gray-200 placeholder-gray-500 transition-all ${
+                    errors.phone ? "border-red-500 focus:ring-red-500/50" : "border-gray-800 focus:border-emerald-500 focus:ring-emerald-500/20"
+                  }`}
+                />
+              </div>
+              {errors.phone && <p className="text-[11px] text-red-400 mt-1">{errors.phone}</p>}
             </div>
-            {errors.phone && <p className="text-xs text-red-400 mt-1.5">{errors.phone}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Account Type</label>
-            <div className="grid grid-cols-2 gap-3">
+            <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-1">Account Type</label>
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, accountType: "household" }))}
-                className={`flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${
+                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl border transition-all cursor-pointer ${
                   formData.accountType === "household"
-                    ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/5"
+                    ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/5 font-semibold"
                     : "border-gray-800 bg-gray-950/30 text-gray-400 hover:border-gray-700 hover:text-gray-300"
                 }`}
               >
-                <Home size={18} />
-                <span className="font-medium text-sm">Household</span>
+                <Home size={15} />
+                <span className="text-xs">Household</span>
               </button>
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, accountType: "shop" }))}
-                className={`flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${
+                className={`flex items-center justify-center gap-1.5 py-2 rounded-xl border transition-all cursor-pointer ${
                   formData.accountType === "shop"
-                    ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/5"
+                    ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-lg shadow-emerald-500/5 font-semibold"
                     : "border-gray-800 bg-gray-950/30 text-gray-400 hover:border-gray-700 hover:text-gray-300"
                 }`}
               >
-                <Store size={18} />
-                <span className="font-medium text-sm">Shop</span>
+                <Store size={15} />
+                <span className="text-xs">Shop</span>
               </button>
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Password</label>
-            <div className="relative">
-              <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="••••••••"
-                autoComplete="new-password"
-                className={`w-full px-4 py-3 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-11 pr-12 text-gray-200 placeholder-gray-500 transition-all ${
-                  errors.password ? "border-red-500 focus:ring-red-500/50" : "border-gray-800 focus:border-emerald-500 focus:ring-emerald-500/20"
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-1">Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  className={`w-full px-3.5 py-2 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-9 pr-9 text-xs sm:text-sm text-gray-200 placeholder-gray-500 transition-all ${
+                    errors.password ? "border-red-500 focus:ring-red-500/50" : "border-gray-800 focus:border-emerald-500 focus:ring-emerald-500/20"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+              {errors.password && <p className="text-[11px] text-red-400 mt-1">{errors.password}</p>}
             </div>
-            {errors.password && <p className="text-xs text-red-400 mt-1.5">{errors.password}</p>}
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Confirm Password</label>
-            <div className="relative">
-              <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="••••••••"
-                autoComplete="new-password"
-                className={`w-full px-4 py-3 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-11 pr-12 text-gray-200 placeholder-gray-500 transition-all ${
-                  errors.confirmPassword ? "border-red-500 focus:ring-red-500/50" : "border-gray-800 focus:border-emerald-500 focus:ring-emerald-500/20"
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
-              >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+            <div>
+              <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-1">Confirm Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  className={`w-full px-3.5 py-2 bg-gray-950/50 border rounded-xl focus:outline-none focus:ring-2 pl-9 pr-9 text-xs sm:text-sm text-gray-200 placeholder-gray-500 transition-all ${
+                    errors.confirmPassword ? "border-red-500 focus:ring-red-500/50" : "border-gray-800 focus:border-emerald-500 focus:ring-emerald-500/20"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="text-[11px] text-red-400 mt-1">{errors.confirmPassword}</p>}
             </div>
-            {errors.confirmPassword && <p className="text-xs text-red-400 mt-1.5">{errors.confirmPassword}</p>}
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-emerald-600/20 border border-emerald-400/25 disabled:opacity-50 mt-2"
+            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-lg shadow-emerald-600/20 border border-emerald-400/25 disabled:opacity-50 mt-1 cursor-pointer"
           >
             {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 
-        <div className="mt-6 space-y-3 text-center border-t border-gray-800/80 pt-6">
-          <p className="text-sm text-gray-400">
+        <div className="mt-3 space-y-1 text-center border-t border-gray-800/80 pt-3">
+          <p className="text-xs text-gray-400">
             Already have an account?{" "}
-            <Link to="/login" className="text-emerald-400 font-medium hover:text-emerald-300 transition-colors">
+            <Link to="/login" className="text-emerald-400 font-semibold hover:text-emerald-300 transition-colors">
               Login here
             </Link>
           </p>
-          <p className="text-sm">
-            <Link to="/admin-register" className="text-gray-400 hover:text-emerald-400 font-medium transition-colors inline-flex items-center gap-1.5">
-              <Shield size={14} className="text-emerald-500" />
+          <p className="text-xs">
+            <Link to="/admin-register" className="text-gray-400 hover:text-emerald-400 font-semibold transition-colors inline-flex items-center gap-1">
+              <Shield size={13} className="text-emerald-500" />
               Register as Administrator
             </Link>
           </p>

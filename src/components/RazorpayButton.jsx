@@ -4,7 +4,16 @@ import axiosInstance from "../api/axiosInstance";
 import { verifyAndPlaceOrder } from "../redux/thunks/orderThunks";
 import toast from "react-hot-toast";
 
-const RazorpayButton = ({ amount, productId, quantity, shippingAddress, onSuccess, validateShipping }) => {
+const RazorpayButton = ({
+  amount,
+  productId,
+  quantity,
+  shippingAddress,
+  onSuccess,
+  validateShipping,
+  offerId,
+  isCart = false,
+}) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
 
@@ -18,12 +27,15 @@ const RazorpayButton = ({ amount, productId, quantity, shippingAddress, onSucces
     const numAmount = Number(amount);
     if (!amount || isNaN(numAmount) || numAmount <= 0) {
       toast.error("Invalid payment amount");
-      console.error("Invalid amount:", amount);
       return;
     }
 
     // 👇 STEP 3: Validate shipping address (extra safety)
-    if (!shippingAddress?.name || !shippingAddress?.phone || !shippingAddress?.street) {
+    if (
+      !shippingAddress?.name ||
+      !shippingAddress?.phone ||
+      !shippingAddress?.street
+    ) {
       toast.error("Please fill all shipping details");
       return;
     }
@@ -40,6 +52,10 @@ const RazorpayButton = ({ amount, productId, quantity, shippingAddress, onSucces
       // 👇 STEP 5: Create order on backend
       const { data: order } = await axiosInstance.post("/orders/create-order", {
         amount: numAmount,
+        productId,
+        quantity,
+        offerId,
+        isCart,
       });
 
       if (!order?.id) {
@@ -52,7 +68,7 @@ const RazorpayButton = ({ amount, productId, quantity, shippingAddress, onSucces
         amount: order.amount,
         currency: order.currency || "INR",
         name: "expireOff",
-        description: "Product Purchase",
+        description: isCart ? "Cart Items Purchase" : "Product Purchase",
         order_id: order.id,
         handler: async (response) => {
           try {
@@ -65,13 +81,14 @@ const RazorpayButton = ({ amount, productId, quantity, shippingAddress, onSucces
                 productId,
                 quantity,
                 shippingAddress,
-              })
+                offerId,
+                isCart,
+              }),
             );
             toast.success("Order placed successfully!");
             onSuccess();
-          } catch (err) {
+          } catch {
             toast.error("Payment verification failed");
-            console.error("Verification error:", err);
           }
         },
         prefill: {
@@ -96,8 +113,10 @@ const RazorpayButton = ({ amount, productId, quantity, shippingAddress, onSucces
 
       rzp.open();
     } catch (error) {
-      console.error("Payment error:", error);
-      const msg = error.response?.data?.message || error.message || "Something went wrong";
+      const msg =
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong";
       toast.error(msg);
       setLoading(false);
     }

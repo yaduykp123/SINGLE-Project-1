@@ -58,8 +58,7 @@ const AdminDashboard = () => {
       setUsers(usersRes.data);
       setProducts(productsRes.data);
       setOrders(ordersRes.data);
-    } catch (error) {
-      console.error("Admin data fetch failed:", error);
+    } catch {
       toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);

@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <Provider store={store}>
       <BrowserRouter>
         <App />
-        <Toaster position="top-right" />
+        <Toaster position="top-right" containerStyle={{ zIndex: 999999 }} />
       </BrowserRouter>
     </Provider>
   </React.StrictMode>

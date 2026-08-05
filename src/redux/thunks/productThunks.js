@@ -15,7 +15,7 @@ import {
 import toast from "react-hot-toast";
 
 
-// ✅ Simple in-memory cache to prevent duplicate fetches
+//  Simple in-memory cache to prevent duplicate fetches
 const cache = {
   products: { data: null, timestamp: 0, key: "" },
   myListings: { data: null, timestamp: 0 },
@@ -35,7 +35,7 @@ export const fetchProducts = (longitude, latitude, category = "All") => async (d
   const cacheKey = `${longitude},${latitude},${category}`;
   const now = Date.now();
   
-  // ✅ Return cached data if fresh
+  //  Return cached data if fresh
   if (cache.products.data && cache.products.key === cacheKey && (now - cache.products.timestamp) < CACHE_DURATION) {
     dispatch(setProducts(cache.products.data));
     return;
@@ -47,7 +47,7 @@ export const fetchProducts = (longitude, latitude, category = "All") => async (d
     if (category !== "All") params.category = category;
     const { data } = await axiosInstance.get("/products", { params });
     
-    // ✅ Store in cache
+    //  Store in cache
     cache.products = { data, timestamp: now, key: cacheKey };
     dispatch(setProducts(data));
   } catch (error) {
@@ -60,7 +60,7 @@ export const fetchProducts = (longitude, latitude, category = "All") => async (d
 export const fetchProductById = (id) => async (dispatch, getState) => {
   const { product: { currentProduct } } = getState();
   
-  // ✅ Return cached if same product
+  //  Return cached if same product
   if (currentProduct?._id === id) {
     return; // Already loaded
   }
@@ -114,34 +114,44 @@ export const fetchReminders = () => async (dispatch) => {
   }
 };
 
-// Create product — invalidate cache on success
-export const createProduct = (formData) => async (dispatch) => {
-  dispatch(setProductLoading(true));
+// Create product — optimistic UI update for instant 0ms rendering
+export const createProduct = (formData, tempProduct) => async (dispatch) => {
+  if (tempProduct) {
+    dispatch(addProduct(tempProduct));
+  }
   try {
     const { data } = await axiosInstance.post("/products", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    dispatch(addProduct(data));
-    dispatch(setFormOpen(false));
-    invalidateProductCache(); // ✅ Clear cache so next fetch gets fresh data
+    if (tempProduct) {
+      dispatch(updateProductInState({ ...data, oldId: tempProduct._id }));
+    } else {
+      dispatch(addProduct(data));
+    }
+    invalidateProductCache();
     toast.success("Product listed successfully!");
   } catch (error) {
+    if (tempProduct) {
+      dispatch(removeProduct(tempProduct._id));
+    }
     const msg = error.response?.data?.message || "Could not post product. Please check details and try again.";
     dispatch(setProductError(msg));
     toast.error(msg);
   }
 };
 
-// Update product
-export const updateProduct = (id, formData) => async (dispatch) => {
-  dispatch(setProductLoading(true));
+// Update product — optimistic UI update without global page loading spinner
+export const updateProduct = (id, formData, tempProduct) => async (dispatch) => {
+  if (tempProduct) {
+    dispatch(updateProductInState(tempProduct));
+  }
   try {
     const { data } = await axiosInstance.put(`/products/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     dispatch(updateProductInState(data));
     dispatch(setEditingProduct(null));
-    invalidateProductCache(); // ✅ Clear cache
+    invalidateProductCache(); //  Clear cache
     toast.success("Product updated successfully!");
   } catch (error) {
     const msg = error.response?.data?.message || "Could not update product. Please try again.";
@@ -150,14 +160,17 @@ export const updateProduct = (id, formData) => async (dispatch) => {
   }
 };
 
-// Delete product
+// Delete product (Optimistic UI update)
 export const deleteProduct = (id) => async (dispatch) => {
+  // Optimistically remove product from UI immediately (0ms delay)
+  dispatch(removeProduct(id));
+  invalidateProductCache();
   try {
     await axiosInstance.delete(`/products/${id}`);
-    dispatch(removeProduct(id));
-    invalidateProductCache(); // ✅ Clear cache
     toast.success("Product removed from listings.");
   } catch (error) {
+    // If backend delete fails, refetch to restore
+    dispatch(fetchMyListings());
     toast.error(error.response?.data?.message || "Could not remove product. Please try again.");
   }
 };

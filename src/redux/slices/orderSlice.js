@@ -25,11 +25,12 @@ const orderSlice = createSlice({
     },
     updateOrderStatusInState: (state, action) => {
       const { orderId, status } = action.payload;
+      const idStr = orderId?.toString();
       state.receivedOrders = state.receivedOrders.map((o) =>
-        o._id === orderId ? { ...o, status } : o
+        (o._id?.toString() === idStr || o._id === orderId) ? { ...o, status } : o
       );
       state.myOrders = state.myOrders.map((o) =>
-        o._id === orderId ? { ...o, status } : o
+        (o._id?.toString() === idStr || o._id === orderId) ? { ...o, status } : o
       );
     },
     setOrderLoading: (state, action) => {
@@ -42,6 +43,19 @@ const orderSlice = createSlice({
     clearOrderError: (state) => {
       state.error = null;
     },
+    removeOrderFromState: (state, action) => {
+      const orderId = action.payload;
+      state.myOrders = state.myOrders.filter((o) => o._id !== orderId);
+      state.receivedOrders = state.receivedOrders.filter((o) => o._id !== orderId);
+    },
+    clearMyOrdersFromState: (state, action) => {
+      const mode = action.payload; // 'all' or 'cancelled'
+      if (mode === "all") {
+        state.myOrders = [];
+      } else {
+        state.myOrders = state.myOrders.filter((o) => o.status !== "cancelled");
+      }
+    },
   },
 });
 
@@ -53,6 +67,8 @@ export const {
   setOrderLoading,
   setOrderError,
   clearOrderError,
+  removeOrderFromState,
+  clearMyOrdersFromState,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;
