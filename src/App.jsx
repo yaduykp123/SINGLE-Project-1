@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { useEffect, Suspense, lazy } from "react";
+import { useEffect, useLayoutEffect, Suspense, lazy } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   checkAuth,
@@ -26,7 +26,8 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminRegister = lazy(() => import("./pages/AdminRegister"));
 const Offers = lazy(() => import("./pages/Offers"));
 const Notifications = lazy(() => import("./pages/Notifications"));
-import Cart from "./pages/Cart";
+const Donations = lazy(() => import("./pages/Donations"));
+const Cart = lazy(() => import("./pages/Cart"));
 
 // ✅ Lightweight loading fallback
 const PageLoader = () => (
@@ -56,12 +57,28 @@ function App() {
   const location = useLocation();
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { theme } = useSelector((state) => state.ui);
   const authPages = ["/login", "/register", "/admin-register", "/verify-otp", "/forgot-password", "/reset-password"];
   const showFooter = !user?.isAdmin && !authPages.includes(location.pathname);
 
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
+
+  // Synchronize theme with documentElement, body, and storage
+  useLayoutEffect(() => {
+    const isDark = theme === "dark";
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      if (document.body) document.body.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      if (document.body) document.body.classList.remove("dark");
+    }
+    try {
+      localStorage.setItem("expireoff-theme", theme);
+    } catch {}
+  }, [theme]);
 
   // ✅ Auto-detect location if missing on login/app load
   useEffect(() => {
@@ -117,7 +134,7 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${theme === "dark" ? "dark" : ""} bg-[#f8faf9] text-gray-900 dark:bg-[#0b0f19] dark:text-gray-100 transition-colors duration-200`}>
       <Navbar />
       <Suspense fallback={<PageLoader />}>
         <Routes>
@@ -128,25 +145,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<LandingPage />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/donations" element={<Donations />} />
           <Route path="/admin-register" element={<AdminRegister />} />
-
-          {/* Protected Routes */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute adminOnly>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/products"
-            element={
-              <ProtectedRoute allowedTypes={["household"]}>
-                <Products />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="/cart"
             element={
@@ -208,6 +209,14 @@ function App() {
             element={
               <ProtectedRoute allowedTypes={["shop"]}>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />

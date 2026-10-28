@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchMyListings, deleteProduct } from "../redux/thunks/productThunks";
+import { fetchMyListings, deleteProduct, clearAllExpiredProducts } from "../redux/thunks/productThunks";
 import { setFormOpen, setEditingProduct } from "../redux/slices/productSlice";
 import ProductForm from "../components/ProductForm";
+import ProductImage from "../components/ProductImage";
+import ConfirmModal from "../components/ConfirmModal";
 import { Plus, Pencil, Trash2, Package, AlertTriangle, Clock, Leaf, Ban } from "lucide-react";
 
 const MyListings = () => {
@@ -10,6 +12,14 @@ const MyListings = () => {
   const { myListings, loading, formOpen } = useSelector(
     (state) => state.product
   );
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmText: "Delete",
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     dispatch(fetchMyListings());
@@ -19,10 +29,28 @@ const MyListings = () => {
     dispatch(setEditingProduct(product));
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      dispatch(deleteProduct(id));
-    }
+  const handleDelete = (id, name = "product") => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Product",
+      message: `Are you sure you want to permanently delete "${name}" from your listings?`,
+      confirmText: "Delete",
+      onConfirm: () => {
+        dispatch(deleteProduct(id));
+      },
+    });
+  };
+
+  const handleRemoveAllExpired = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Remove All Expired Products",
+      message: `Are you sure you want to permanently remove all ${expiredProducts.length} expired product(s)? This will discard them from your listings.`,
+      confirmText: `Remove All (${expiredProducts.length})`,
+      onConfirm: () => {
+        dispatch(clearAllExpiredProducts());
+      },
+    });
   };
 
   const handleAddNew = () => {
@@ -52,31 +80,32 @@ const MyListings = () => {
     return (
       <div 
         key={product._id} 
-        className={`group relative bg-[#111827]/80 border backdrop-blur-md rounded-3xl overflow-hidden flex flex-col transition-all duration-500 ${
+        className={`group relative bg-white border border-gray-200/90 shadow-sm hover:shadow-md dark:bg-[#111827]/80 dark:border-gray-800/60 backdrop-blur-md rounded-3xl overflow-hidden flex flex-col transition-all duration-300 ${
           isExpired 
-            ? "border-gray-800/40 opacity-50 grayscale" 
-            : "border-gray-800/60 hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-900/20 hover:border-emerald-500/30"
+            ? "border-gray-200/40 dark:border-gray-800/40 opacity-50 grayscale" 
+            : "hover:-translate-y-1 hover:shadow-xl hover:border-emerald-300 dark:hover:border-emerald-500/30"
         }`}
       >
-        {/* Image Container — Full Image, No Zoom */}
-        <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-[#1a2235] to-[#0f1520] p-5 flex items-center justify-center overflow-hidden">
-          <img
-            src={product.image || "https://via.placeholder.com/300x200?text=No+Image"}
+        {/* Image Container */}
+        <div className="relative w-full aspect-[4/3] bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800/60 p-4 flex items-center justify-center overflow-hidden">
+          <ProductImage
+            src={product.image}
             alt={product.name}
-            className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-105"
+            category={product.category}
+            className="w-full h-full object-contain drop-shadow-sm"
           />
 
           {/* Top Left Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {isExpired && (
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-gray-600/80 border border-gray-500/30 text-gray-300 text-[10px] font-bold uppercase tracking-wider rounded-lg backdrop-blur-md">
+              <div className="flex items-center gap-1 px-2.5 py-1 bg-gray-600/80 border border-gray-500/30 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg backdrop-blur-md">
                 <AlertTriangle size={10} />
                 EXPIRED
               </div>
             )}
 
             {!isExpired && discountPercent > 0 && (
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[10px] font-bold uppercase tracking-wider rounded-lg backdrop-blur-md">
+              <div className="flex items-center gap-1 px-2.5 py-1 bg-rose-600 text-white dark:bg-rose-500/20 dark:border dark:border-rose-500/30 dark:text-rose-300 text-[10px] font-black uppercase tracking-wider rounded-lg shadow-sm">
                 {discountPercent}% OFF
               </div>
             )}
@@ -85,41 +114,38 @@ const MyListings = () => {
           {/* Top Right Badge */}
           <div className="absolute top-3 right-3">
             {!isExpired && daysUntilExpiry <= 3 && (
-              <div className="flex items-center gap-1 px-2.5 py-1 bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-bold uppercase tracking-wider rounded-lg backdrop-blur-md">
+              <div className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:border-amber-500/30 dark:text-amber-300 text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-sm">
                 <Clock size={10} />
                 {daysUntilExpiry}d left
               </div>
             )}
           </div>
-
-          {/* Bottom Gradient Fade */}
-          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#111827] to-transparent pointer-events-none" />
         </div>
 
         {/* Content */}
         <div className="p-5 flex flex-col flex-grow">
           {/* Title */}
-          <h3 className={`font-bold text-lg leading-tight mb-2 ${isExpired ? "text-gray-500" : "text-white group-hover:text-emerald-300 transition-colors"}`}>
+          <h3 className={`font-bold text-lg leading-tight mb-2 ${isExpired ? "text-gray-400 dark:text-gray-500" : "text-gray-900 group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-300 transition-colors"}`}>
             {product.name}
           </h3>
           
           {/* Description */}
-          <p className="text-sm text-gray-500 mb-4 line-clamp-2 leading-relaxed">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">
             {product.description}
           </p>
 
           {/* Price */}
           <div className="flex items-baseline gap-2.5 mb-4">
-            <span className={`text-2xl font-extrabold tracking-tight ${isExpired ? "text-gray-600" : "text-emerald-400"}`}>
+            <span className={`text-2xl font-extrabold tracking-tight ${isExpired ? "text-gray-400 dark:text-gray-600" : "text-emerald-600 dark:text-emerald-400"}`}>
               ₹{product.discountPrice}
             </span>
             {!isExpired && (
-              <span className="text-sm text-gray-600 line-through font-medium">
+              <span className="text-sm text-gray-400 dark:text-gray-600 line-through font-medium">
                 ₹{product.marketPrice}
               </span>
             )}
             {!isExpired && discountPercent > 0 && (
-              <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 dark:text-rose-400 dark:bg-rose-500/10 dark:border-none px-2 py-0.5 rounded-md">
                 SAVE ₹{product.marketPrice - product.discountPrice}
               </span>
             )}
@@ -127,19 +153,19 @@ const MyListings = () => {
 
           {/* Meta Info */}
           <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-            <div className="flex items-center gap-1.5 bg-[#0f1520] px-2.5 py-1.5 rounded-lg border border-gray-800/50">
-              <span className="font-medium text-gray-400">Stock:</span>
-              <span className="font-bold text-gray-300">{product.stock}</span>
+            <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 dark:bg-[#0f1520] dark:border-gray-800/50 px-2.5 py-1.5 rounded-lg">
+              <span className="font-medium text-gray-500 dark:text-gray-400">Stock:</span>
+              <span className="font-bold text-gray-800 dark:text-gray-300">{product.stock}</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-[#0f1520] px-2.5 py-1.5 rounded-lg border border-gray-800/50">
-              <span className="font-bold text-gray-300">{product.quantity}</span>
-              <span className="font-medium text-gray-400">{product.unit}</span>
+            <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 dark:bg-[#0f1520] dark:border-gray-800/50 px-2.5 py-1.5 rounded-lg">
+              <span className="font-bold text-gray-800 dark:text-gray-300">{product.quantity}</span>
+              <span className="font-medium text-gray-500 dark:text-gray-400">{product.unit}</span>
             </div>
           </div>
 
           {/* Expiry Date */}
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-5">
-            <Clock size={12} className="text-emerald-500/70" />
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-5">
+            <Clock size={12} className="text-emerald-600 dark:text-emerald-500/70" />
             <span className="font-medium">
               {isExpired 
                 ? `Expired on ${new Date(product.expiryDate).toLocaleDateString()}` 
@@ -152,19 +178,22 @@ const MyListings = () => {
           <div className="flex-grow" />
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-4 border-t border-gray-800/50">
+          <div className="flex gap-2 pt-4 border-t border-gray-100 dark:border-gray-800/50">
             {!isExpired && (
               <button
                 onClick={() => handleEdit(product)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-[#1a2235] hover:bg-emerald-500/15 border border-gray-800 hover:border-emerald-500/30 rounded-xl transition-all duration-300 text-xs font-bold text-gray-400 hover:text-emerald-300"
+                className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-gray-100 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 text-gray-700 hover:text-emerald-700 dark:bg-[#1a2235] dark:hover:bg-emerald-500/15 dark:border-gray-800 dark:hover:border-emerald-500/30 rounded-xl transition-all duration-300 text-xs font-bold dark:text-gray-400 dark:hover:text-emerald-300 cursor-pointer"
               >
                 <Pencil size={14} />
                 Edit
               </button>
             )}
             <button
-              onClick={() => handleDelete(product._id)}
-              className={`flex items-center justify-center gap-1.5 py-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 rounded-xl transition-all duration-300 text-xs font-bold text-rose-400 ${
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(product._id, product.name);
+              }}
+              className={`flex items-center justify-center gap-1.5 py-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 hover:border-rose-300 text-rose-600 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 dark:border-rose-500/20 dark:hover:border-rose-500/40 rounded-xl transition-all duration-300 text-xs font-bold dark:text-rose-400 cursor-pointer ${
                 isExpired ? "w-full" : "flex-1"
               }`}
             >
@@ -178,30 +207,26 @@ const MyListings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-gray-100 p-4 md:p-8 relative overflow-hidden selection:bg-emerald-500 selection:text-white">
-      {/* Background Glow Elements */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-600/5 blur-[150px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none" />
-
+    <div className="min-h-screen bg-[#f8faf9] text-gray-900 dark:bg-[#0b0f19] dark:text-gray-100 p-4 md:p-8 relative overflow-hidden selection:bg-emerald-500 selection:text-white transition-colors duration-200">
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
           <div>
-            <div className="inline-flex items-center gap-1 px-3 py-0 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400 text-xs font-bold uppercase tracking-widest mb-3 backdrop-blur-md shadow-sm">
               <img 
-                src="/Images/LOGO_ExpireOFF-generated.png" 
-                alt="expireOFF Icon" 
-                className="w-20 object-contain shrink-0" 
+                src="/Images/fresh-produce-clock.png" 
+                alt="Inventory" 
+                className="w-4 h-4 object-contain shrink-0" 
               />
-              Inventory
+              <span>My Active Listings</span>
             </div>
-            <h1 className="text-4xl font-extrabold text-white tracking-tight mb-2">My Listings</h1>
-            <p className="text-sm text-gray-400 font-medium">
+            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">My Listings</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
               Manage your posted products and track expirations
             </p>
           </div>
           <button
             onClick={handleAddNew}
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-7 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 border border-emerald-400/25 hover:shadow-emerald-600/30 hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-7 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 border border-emerald-400/25 hover:shadow-emerald-600/30 hover:-translate-y-0.5 cursor-pointer"
           >
             <Plus size={18} />
             <span>Add Product</span>
@@ -215,17 +240,17 @@ const MyListings = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-[3px] border-emerald-500/30 border-t-emerald-500"></div>
           </div>
         ) : myListings.length === 0 ? (
-          <div className="bg-[#111827]/60 border border-gray-800/60 backdrop-blur-2xl text-center py-24 rounded-3xl shadow-2xl shadow-black/30 max-w-xl mx-auto">
-            <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/10">
-              <Package size={32} className="text-emerald-400" />
+          <div className="bg-white border border-gray-200 shadow-sm dark:bg-[#111827]/60 dark:border-gray-800/60 backdrop-blur-2xl text-center py-24 rounded-3xl max-w-xl mx-auto">
+            <div className="w-20 h-20 bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+              <Package size={32} className="text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">No listings yet</h3>
-            <p className="text-gray-400 text-sm mb-8 max-w-xs mx-auto leading-relaxed">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">No listings yet</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-8 max-w-xs mx-auto leading-relaxed">
               Start selling your surplus food items and prevent waste
             </p>
             <button 
               onClick={handleAddNew} 
-              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-7 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 border border-emerald-400/25 text-sm hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-7 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 border border-emerald-400/25 text-sm hover:-translate-y-0.5 cursor-pointer"
             >
               Post Your First Product
             </button>
@@ -235,7 +260,7 @@ const MyListings = () => {
             {/* ====== ACTIVE PRODUCTS ====== */}
             {activeProducts.length > 0 && (
               <div>
-                <h2 className="text-lg font-bold text-white mb-5 flex items-center gap-2.5 tracking-tight">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2.5 tracking-tight">
                   <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/50"></span>
                   Active Products 
                   <span className="text-sm text-gray-500 font-normal">({activeProducts.length})</span>
@@ -249,20 +274,30 @@ const MyListings = () => {
             {/* ====== EXPIRED PRODUCTS ====== */}
             {expiredProducts.length > 0 && (
               <div>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2.5 tracking-tight">
-                    <span className="w-2.5 h-2.5 bg-gray-500 rounded-full"></span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2.5 tracking-tight">
+                    <span className="w-2.5 h-2.5 bg-gray-400 dark:bg-gray-500 rounded-full"></span>
                     Expired Products
                     <span className="text-sm text-gray-500 font-normal">({expiredProducts.length})</span>
                   </h2>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-[#1a2235] text-gray-400 px-3 py-1.5 rounded-full border border-gray-800/50">
-                    View Only
-                  </span>
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      onClick={handleRemoveAllExpired}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 dark:border-rose-500/30 dark:text-rose-400 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
+                      title="Permanently remove all expired products from your listings"
+                    >
+                      <Trash2 size={13} />
+                      <span>Remove All Expired ({expiredProducts.length})</span>
+                    </button>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-700 dark:bg-[#1a2235] dark:text-gray-400 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800/50">
+                      View Only
+                    </span>
+                  </div>
                 </div>
 
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-6 flex items-center gap-3 backdrop-blur-md shadow-lg">
-                  <AlertTriangle size={18} className="text-amber-400 shrink-0" />
-                  <p className="text-sm text-amber-200/80 font-medium">
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-200/80 rounded-2xl p-4 mb-6 flex items-center gap-3 backdrop-blur-md shadow-sm">
+                  <AlertTriangle size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                  <p className="text-sm font-medium">
                     These products have expired and are no longer visible to buyers. You can only delete them.
                   </p>
                 </div>
@@ -275,6 +310,15 @@ const MyListings = () => {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

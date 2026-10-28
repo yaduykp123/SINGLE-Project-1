@@ -19,14 +19,29 @@ export const getEmailError = (email) => {
 // PHONE VALIDATION (Indian format)
 
 export const isValidPhone = (phone) => {
-  // Accepts: +91 9876543210, 9876543210, +919876543210
-  const phoneRegex = /^(\+91[\s-]?)?[6-9]\d{9}$/;
-  return phoneRegex.test(phone.replace(/\s/g, ""));
+  if (!phone) return false;
+  // Accepts: 9876543210, +91 9876543210, +91-9876543210, +919876543210, 919876543210
+  const cleanPhone = String(phone).replace(/[\s-]/g, "");
+  const phoneRegex = /^(\+91|91)?[6-9]\d{9}$/;
+  return phoneRegex.test(cleanPhone);
 };
 
 export const getPhoneError = (phone) => {
-  if (!phone) return "Phone number is required";
-  if (!isValidPhone(phone)) return "Enter valid 10-digit Indian mobile number";
+  if (!phone || !String(phone).trim()) return "Phone number is required";
+  const cleanPhone = String(phone).replace(/[\s-]/g, "");
+  
+  // Check if contains non-digits after optional +
+  const digitsOnly = cleanPhone.startsWith("+") ? cleanPhone.slice(1) : cleanPhone;
+  if (!/^\d+$/.test(digitsOnly)) {
+    return "Phone number must only contain digits";
+  }
+
+  // Check 10-digit standard Indian format
+  if (!isValidPhone(phone)) {
+    if (digitsOnly.length < 10) return "Phone number must be at least 10 digits";
+    if (digitsOnly.length > 12) return "Phone number exceeds maximum length (10 digits)";
+    return "Enter valid 10-digit Indian mobile number (starts with 6, 7, 8, or 9)";
+  }
   return null;
 };
 

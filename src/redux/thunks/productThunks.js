@@ -1,12 +1,17 @@
 import axiosInstance from "../../api/axiosInstance";
 import {
   setProducts,
+  setFeaturedDeals,
+  setNearbyProducts,
+  setBrands,
+  setRecommendations,
   setMyListings,
   setReminders,
   setCurrentProduct,
   addProduct,
   updateProductInState,
   removeProduct,
+  clearExpiredProductsFromState,
   setProductLoading,
   setProductError,
   setFormOpen,
@@ -14,44 +19,101 @@ import {
 } from "../slices/productSlice";
 import toast from "react-hot-toast";
 
-
-//  Simple in-memory cache to prevent duplicate fetches
+// Simple in-memory cache for listings & reminders
 const cache = {
-  products: { data: null, timestamp: 0, key: "" },
   myListings: { data: null, timestamp: 0 },
   reminders: { data: null, timestamp: 0 },
 };
-const CACHE_DURATION = 30 * 1000; // 30 seconds
+const CACHE_DURATION = 30 * 1000;
 
-const invalidateProductCache = () => {
-  cache.products = { data: null, timestamp: 0, key: "" };
+export const invalidateProductCache = () => {
   cache.myListings = { data: null, timestamp: 0 };
   cache.reminders = { data: null, timestamp: 0 };
 };
 
-
-// Fetch products by location — WITH CACHE
-export const fetchProducts = (longitude, latitude, category = "All") => async (dispatch, getState) => {
-  const cacheKey = `${longitude},${latitude},${category}`;
-  const now = Date.now();
-  
-  //  Return cached data if fresh
-  if (cache.products.data && cache.products.key === cacheKey && (now - cache.products.timestamp) < CACHE_DURATION) {
-    dispatch(setProducts(cache.products.data));
-    return;
+// Fetch products with rich multi-filter, search, sort, and pagination support
+export const fetchProducts = (arg1, arg2, arg3, arg4) => async (dispatch) => {
+  let params = {};
+  if (typeof arg1 === "object" && arg1 !== null) {
+    params = { ...arg1 };
+  } else {
+    params = {
+      longitude: arg1 || 0,
+      latitude: arg2 || 0,
+      ...(arg3 && arg3 !== "All" ? { category: arg3 } : {}),
+      ...(arg4 || {}),
+    };
   }
+
+  // Remove empty or 'All' keys
+  Object.keys(params).forEach((key) => {
+    if (
+      params[key] === undefined ||
+      params[key] === null ||
+      params[key] === "" ||
+      params[key] === "All"
+    ) {
+      delete params[key];
+    }
+  });
 
   dispatch(setProductLoading(true));
   try {
-    const params = { longitude, latitude };
-    if (category !== "All") params.category = category;
     const { data } = await axiosInstance.get("/products", { params });
-    
-    //  Store in cache
-    cache.products = { data, timestamp: now, key: cacheKey };
     dispatch(setProducts(data));
+    return data;
   } catch (error) {
-    dispatch(setProductError(error.response?.data?.message || "Unable to load nearby products. Please refresh or try again."));
+    dispatch(
+      setProductError(
+        error.response?.data?.message || "Unable to load products. Please refresh or try again."
+      )
+    );
+  }
+};
+
+// Fetch Featured Deals (Active, verified discounts)
+export const fetchFeaturedDeals = () => async (dispatch) => {
+  try {
+    const { data } = await axiosInstance.get("/products/featured-deals");
+    dispatch(setFeaturedDeals(data));
+    return data;
+  } catch (error) {
+    // Non-blocking for homepage
+    return [];
+  }
+};
+
+// Fetch Nearby Products
+export const fetchNearbyProducts = (longitude, latitude, maxDistance = 25000) => async (dispatch) => {
+  try {
+    const params = { longitude, latitude, maxDistance };
+    const { data } = await axiosInstance.get("/products/nearby", { params });
+    dispatch(setNearbyProducts(data));
+    return data;
+  } catch (error) {
+    return [];
+  }
+};
+
+// Fetch Distinct Brands
+export const fetchBrands = () => async (dispatch) => {
+  try {
+    const { data } = await axiosInstance.get("/products/brands");
+    dispatch(setBrands(data));
+    return data;
+  } catch (error) {
+    return [];
+  }
+};
+
+// Fetch Recommendations
+export const fetchRecommendations = (limit = 8) => async (dispatch) => {
+  try {
+    const { data } = await axiosInstance.get("/products/recommendations", { params: { limit } });
+    dispatch(setRecommendations(data));
+    return data;
+  } catch (error) {
+    return [];
   }
 };
 
@@ -172,5 +234,23 @@ export const deleteProduct = (id) => async (dispatch) => {
     // If backend delete fails, refetch to restore
     dispatch(fetchMyListings());
     toast.error(error.response?.data?.message || "Could not remove product. Please try again.");
+  }
+};
+
+// Clear all expired products in bulk
+export const clearAllExpiredProducts = () => async (dispatch) => {
+  // Optimistically remove all expired products from UI immediately
+  dispatch(clearExpiredProductsFromState());
+  invalidateProductCache();
+  try {
+    const { data } = await axiosInstance.delete("/products/expired/clear");
+    toast.success(data.message || "All expired products removed successfully!");
+    return data;
+  } catch (error) {
+    // If backend delete fails, refetch to restore
+    dispatch(fetchMyListings());
+    const msg = error.response?.data?.message || "Could not remove expired products. Please try again.";
+    toast.error(msg);
+    throw error;
   }
 };

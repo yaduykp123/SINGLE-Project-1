@@ -17,6 +17,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import ProductImage from "../components/ProductImage";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -182,13 +183,13 @@ const AdminDashboard = () => {
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <Shield size={28} className="text-slate-700" />
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+          <Shield size={28} className="text-slate-700 dark:text-emerald-400" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
         </div>
         <button
           onClick={fetchDashboardData}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
         >
           <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
           Refresh
@@ -205,15 +206,15 @@ const AdminDashboard = () => {
               <stat.icon size={24} className="text-white" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              <p className="text-sm text-gray-500">{stat.label}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
+      <div className="flex border-b border-gray-200 dark:border-gray-800 mb-6 overflow-x-auto scrollbar-none scroll-smooth">
         {[
           { id: "overview", label: "Overview" },
           { id: "users", label: `Users (${users.length})` },
@@ -226,10 +227,10 @@ const AdminDashboard = () => {
               setActiveTab(tab.id);
               setSearchTerm("");
             }}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === tab.id
-                ? "border-emerald-600 text-emerald-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-emerald-600 text-emerald-600 dark:text-emerald-400 dark:border-emerald-400"
+                : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             }`}
           >
             {tab.label}
@@ -253,7 +254,7 @@ const AdminDashboard = () => {
         {searchTerm && (
           <button
             onClick={() => setSearchTerm("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
           >
             <X size={16} />
           </button>
@@ -265,42 +266,42 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Users */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
               Recent Users
             </h2>
             {users.length === 0 ? (
-              <p className="text-gray-500">No users yet</p>
+              <p className="text-gray-500 dark:text-gray-400">No users yet</p>
             ) : (
               <div className="space-y-3">
                 {users.slice(0, 5).map((u) => (
                   <div
                     key={u._id}
-                    className="flex items-center justify-between py-2 border-b border-gray-100"
+                    className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800/60"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-gray-900 dark:text-white">
                           {u.fullName}
                         </p>
                         {u.isAdmin && (
-                          <span className="text-xs bg-slate-800 text-white px-2 py-0.5 rounded-full">
+                          <span className="text-xs bg-slate-800 dark:bg-emerald-950 text-white dark:text-emerald-300 border dark:border-emerald-800 px-2 py-0.5 rounded-full">
                             Admin
                           </span>
                         )}
                         {u.isBlocked && (
-                          <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full">
                             <Ban size={12} />
                             Blocked
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">{u.email}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{u.email}</p>
                     </div>
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${
                         u.accountType === "shop"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-emerald-100 text-emerald-700"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
                       }`}
                     >
                       {u.accountType}
@@ -313,25 +314,25 @@ const AdminDashboard = () => {
 
           {/* Recent Orders */}
           <div className="card">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
               Recent Orders
             </h2>
             {orders.length === 0 ? (
-              <p className="text-gray-500">No orders yet</p>
+              <p className="text-gray-500 dark:text-gray-400">No orders yet</p>
             ) : (
               <div className="space-y-3">
                 {orders.slice(0, 5).map((o) => (
                   <div
                     key={o._id}
-                    className="flex items-center justify-between py-2 border-b border-gray-100"
+                    className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800/60"
                   >
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-gray-900 dark:text-white">
                         {o.productName}
                       </p>
-                      <p className="text-sm text-gray-500">by {o.buyerName}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">by {o.buyerName}</p>
                     </div>
-                    <span className="text-emerald-600 font-medium">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                       ₹{o.totalAmount}
                     </span>
                   </div>
@@ -346,68 +347,54 @@ const AdminDashboard = () => {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Name
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Email
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Type
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Location
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Joined
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Status
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Actions
-                </th>
+              <tr className="border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400">
+                <th className="text-left py-3 px-2 font-medium">Name</th>
+                <th className="text-left py-3 px-2 font-medium">Email</th>
+                <th className="text-left py-3 px-2 font-medium">Type</th>
+                <th className="text-left py-3 px-2 font-medium">Location</th>
+                <th className="text-left py-3 px-2 font-medium">Joined</th>
+                <th className="text-left py-3 px-2 font-medium">Status</th>
+                <th className="text-left py-3 px-2 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((u) => (
                 <tr
                   key={u._id}
-                  className="border-b border-gray-50 hover:bg-gray-50"
+                  className="border-b border-gray-100 dark:border-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
                 >
                   <td className="py-3 px-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{u.fullName}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{u.fullName}</span>
                       {u.isAdmin && (
-                        <Shield size={14} className="text-slate-700" />
+                        <Shield size={14} className="text-slate-700 dark:text-emerald-400" />
                       )}
                     </div>
                   </td>
-                  <td className="py-3 px-2 text-gray-600">{u.email}</td>
+                  <td className="py-3 px-2 text-gray-600 dark:text-gray-300">{u.email}</td>
                   <td className="py-3 px-2">
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full ${
                         u.accountType === "shop"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-emerald-100 text-emerald-700"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
                       }`}
                     >
                       {u.accountType}
                     </span>
                   </td>
-                  <td className="py-3 px-2 text-gray-500">{u.city || "—"}</td>
-                  <td className="py-3 px-2 text-gray-500">
+                  <td className="py-3 px-2 text-gray-500 dark:text-gray-400">{u.city || "—"}</td>
+                  <td className="py-3 px-2 text-gray-500 dark:text-gray-400">
                     {new Date(u.createdAt).toLocaleDateString()}
                   </td>
                   <td className="py-3 px-2">
                     {u.isBlocked ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full">
                         <Ban size={12} />
                         Blocked
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full">
                         <CheckCircle size={12} />
                         Active
                       </span>
@@ -415,7 +402,6 @@ const AdminDashboard = () => {
                   </td>
                   <td className="py-3 px-2">
                     <div className="flex items-center gap-2">
-                      {/* Block/Unblock button */}
                       {!u.isAdmin && (
                         <button
                           onClick={() =>
@@ -423,21 +409,20 @@ const AdminDashboard = () => {
                               ? handleUnblockUser(u._id)
                               : handleBlockUser(u._id)
                           }
-                          className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                          className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                             u.isBlocked
-                              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-                              : "bg-red-100 text-red-700 hover:bg-red-200"
+                              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300"
+                              : "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-300"
                           }`}
                         >
                           {u.isBlocked ? "Unblock" : "Block"}
                         </button>
                       )}
 
-                      {/* Delete button */}
                       {!u.isAdmin && (
                         <button
                           onClick={() => handleDeleteUser(u._id)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
                           title="Delete user"
                         >
                           <Trash2 size={16} />
@@ -456,68 +441,57 @@ const AdminDashboard = () => {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Product
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Seller
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Price
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Stock
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Expires
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Actions
-                </th>
+              <tr className="border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400">
+                <th className="text-left py-3 px-2 font-medium">Product</th>
+                <th className="text-left py-3 px-2 font-medium">Seller</th>
+                <th className="text-left py-3 px-2 font-medium">Price</th>
+                <th className="text-left py-3 px-2 font-medium">Stock</th>
+                <th className="text-left py-3 px-2 font-medium">Expires</th>
+                <th className="text-left py-3 px-2 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredProducts.map((p) => (
                 <tr
                   key={p._id}
-                  className="border-b border-gray-50 hover:bg-gray-50"
+                  className="border-b border-gray-100 dark:border-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
                 >
                   <td className="py-3 px-2">
                     <div className="flex items-center gap-3">
-                      <img
-                        src={
-                          p.image ||
-                          "https://via.placeholder.com/40?text=No+Image"
-                        }
-                        alt={p.name}
-                        className="w-10 h-10 object-cover rounded-lg"
-                      />
+                      <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-800 shrink-0 overflow-hidden bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                        <ProductImage
+                          src={p.image}
+                          alt={p.name}
+                          category={p.category}
+                          className="w-full h-full object-cover"
+                          iconSize={16}
+                        />
+                      </div>
                       <div>
-                        <p className="font-medium">{p.name}</p>
-                        <p className="text-xs text-gray-500">{p.category}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{p.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{p.category}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 px-2 text-gray-600">
+                  <td className="py-3 px-2 text-gray-600 dark:text-gray-300">
                     {p.ownerName || p.owner?.fullName}
                   </td>
                   <td className="py-3 px-2">
-                    <span className="text-emerald-600 font-medium">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                       ₹{p.discountPrice}
                     </span>
                     <span className="text-gray-400 line-through text-xs ml-1">
                       ₹{p.marketPrice}
                     </span>
                   </td>
-                  <td className="py-3 px-2">{p.stock}</td>
-                  <td className="py-3 px-2 text-gray-500">
+                  <td className="py-3 px-2 text-gray-900 dark:text-gray-200">{p.stock}</td>
+                  <td className="py-3 px-2 text-gray-500 dark:text-gray-400">
                     {new Date(p.expiryDate).toLocaleDateString()}
                   </td>
                   <td className="py-3 px-2">
                     <button
                       onClick={() => handleDeleteProduct(p._id)}
-                      className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
                       title="Delete product"
                     >
                       <Trash2 size={16} />
@@ -534,51 +508,39 @@ const AdminDashboard = () => {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Order ID
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Product
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Buyer
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Amount
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Status
-                </th>
-                <th className="text-left py-3 px-2 text-gray-500 font-medium">
-                  Actions
-                </th>
+              <tr className="border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400">
+                <th className="text-left py-3 px-2 font-medium">Order ID</th>
+                <th className="text-left py-3 px-2 font-medium">Product</th>
+                <th className="text-left py-3 px-2 font-medium">Buyer</th>
+                <th className="text-left py-3 px-2 font-medium">Amount</th>
+                <th className="text-left py-3 px-2 font-medium">Status</th>
+                <th className="text-left py-3 px-2 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredOrders.map((o) => (
                 <tr
                   key={o._id}
-                  className="border-b border-gray-50 hover:bg-gray-50"
+                  className="border-b border-gray-100 dark:border-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
                 >
-                  <td className="py-3 px-2 font-mono text-xs">
+                  <td className="py-3 px-2 font-mono text-xs text-gray-500 dark:text-gray-400">
                     ...{o.orderId?.slice(-8)}
                   </td>
-                  <td className="py-3 px-2 font-medium">{o.productName}</td>
-                  <td className="py-3 px-2 text-gray-600">{o.buyerName}</td>
-                  <td className="py-3 px-2 text-emerald-600 font-medium">
+                  <td className="py-3 px-2 font-medium text-gray-900 dark:text-white">{o.productName}</td>
+                  <td className="py-3 px-2 text-gray-600 dark:text-gray-300">{o.buyerName}</td>
+                  <td className="py-3 px-2 text-emerald-600 dark:text-emerald-400 font-medium">
                     ₹{o.totalAmount}
                   </td>
                   <td className="py-3 px-2">
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
                         o.status === "pending"
-                          ? "bg-amber-100 text-amber-700"
+                          ? "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
                           : o.status === "delivered"
-                            ? "bg-emerald-100 text-emerald-700"
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
                             : o.status === "cancelled"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-blue-100 text-blue-700"
+                              ? "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                              : "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
                       }`}
                     >
                       {o.status}
@@ -590,13 +552,13 @@ const AdminDashboard = () => {
                       onChange={(e) =>
                         handleUpdateOrderStatus(o._id, e.target.value)
                       }
-                      className="text-xs border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="text-xs border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     >
-                      <option value="pending">Pending</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
+                      <option value="pending" className="bg-white text-gray-900 dark:bg-gray-900 dark:text-white">Pending</option>
+                      <option value="confirmed" className="bg-white text-gray-900 dark:bg-gray-900 dark:text-white">Confirmed</option>
+                      <option value="shipped" className="bg-white text-gray-900 dark:bg-gray-900 dark:text-white">Shipped</option>
+                      <option value="delivered" className="bg-white text-gray-900 dark:bg-gray-900 dark:text-white">Delivered</option>
+                      <option value="cancelled" className="bg-white text-gray-900 dark:bg-gray-900 dark:text-white">Cancelled</option>
                     </select>
                   </td>
                 </tr>

@@ -12,13 +12,30 @@ const notificationSlice = createSlice({
   initialState,
   reducers: {
     setNotifications: (state, action) => {
-      state.notifications = action.payload.notifications;
-      state.unreadCount = action.payload.unreadCount;
+      const raw = action.payload?.notifications || [];
+      const uniqueMap = new Map();
+      raw.forEach((n) => {
+        if (n && n._id) uniqueMap.set(n._id, n);
+      });
+      state.notifications = Array.from(uniqueMap.values());
+      state.unreadCount = typeof action.payload?.unreadCount === "number"
+        ? action.payload.unreadCount
+        : state.notifications.filter((n) => !n.isRead).length;
       state.loading = false;
     },
     addNotification: (state, action) => {
-      state.notifications.unshift(action.payload);
-      state.unreadCount += 1;
+      const newNotif = action.payload;
+      if (!newNotif?._id) return;
+      const index = state.notifications.findIndex((n) => n._id?.toString() === newNotif._id?.toString());
+      if (index === -1) {
+        state.notifications.unshift(newNotif);
+        if (!newNotif.isRead) {
+          state.unreadCount += 1;
+        }
+      } else {
+        // Update existing notification in-place
+        state.notifications[index] = { ...state.notifications[index], ...newNotif };
+      }
     },
     markSingleAsRead: (state, action) => {
       const id = action.payload;

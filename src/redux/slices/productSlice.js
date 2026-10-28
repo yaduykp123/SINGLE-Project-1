@@ -2,10 +2,19 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   products: [],
+  featuredDeals: [],
+  nearbyProducts: [],
+  recommendations: [],
+  brands: [],
+  total: 0,
+  page: 1,
+  totalPages: 1,
+  limit: 24,
+  hasMore: false,
   myListings: [],
   reminders: [],
   currentProduct: null,
-  categories: ["All", "Grocery Items", "Fruits", "Vegetables", "Meat/Fish", "Dairy", "Other"],
+  categories: ["All", "Grocery Items", "Fruits", "Vegetables", "Meat/Fish", "Dairy", "Bakery", "Other"],
   selectedCategory: "All",
   loading: false,
   error: null,
@@ -18,8 +27,33 @@ const productSlice = createSlice({
   initialState,
   reducers: {
     setProducts: (state, action) => {
-      state.products = action.payload;
+      if (Array.isArray(action.payload)) {
+        state.products = action.payload;
+        state.total = action.payload.length;
+        state.totalPages = 1;
+        state.page = 1;
+        state.hasMore = false;
+      } else if (action.payload && Array.isArray(action.payload.products)) {
+        state.products = action.payload.products;
+        state.total = action.payload.total ?? action.payload.products.length;
+        state.totalPages = action.payload.totalPages ?? 1;
+        state.page = action.payload.page ?? 1;
+        state.limit = action.payload.limit ?? 24;
+        state.hasMore = Boolean(action.payload.hasMore);
+      }
       state.loading = false;
+    },
+    setFeaturedDeals: (state, action) => {
+      state.featuredDeals = Array.isArray(action.payload) ? action.payload : [];
+    },
+    setNearbyProducts: (state, action) => {
+      state.nearbyProducts = Array.isArray(action.payload) ? action.payload : [];
+    },
+    setBrands: (state, action) => {
+      state.brands = Array.isArray(action.payload) ? action.payload : [];
+    },
+    setRecommendations: (state, action) => {
+      state.recommendations = Array.isArray(action.payload) ? action.payload : [];
     },
     setMyListings: (state, action) => {
       state.myListings = action.payload;
@@ -58,6 +92,12 @@ const productSlice = createSlice({
       state.myListings = state.myListings.filter((p) => p._id !== id);
       state.reminders = state.reminders.filter((p) => p._id !== id);
     },
+    clearExpiredProductsFromState: (state) => {
+      const now = new Date();
+      state.myListings = state.myListings.filter((p) => new Date(p.expiryDate) > now);
+      state.products = state.products.filter((p) => new Date(p.expiryDate) > now);
+      state.reminders = state.reminders.filter((p) => new Date(p.expiryDate) > now);
+    },
     setSelectedCategory: (state, action) => {
       state.selectedCategory = action.payload;
     },
@@ -83,12 +123,17 @@ const productSlice = createSlice({
 
 export const {
   setProducts,
+  setFeaturedDeals,
+  setNearbyProducts,
+  setBrands,
+  setRecommendations,
   setMyListings,
   setReminders,
   setCurrentProduct,
   addProduct,
   updateProductInState,
   removeProduct,
+  clearExpiredProductsFromState,
   setSelectedCategory,
   setFormOpen,
   setEditingProduct,

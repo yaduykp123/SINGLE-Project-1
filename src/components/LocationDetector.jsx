@@ -19,8 +19,8 @@ const LocationDetector = () => {
         if (data && data.city && data.city !== "Not found") {
           dispatch(
             updateLocationThunk({
-              latitude: data.latitude || 0,
-              longitude: data.longitude || 0,
+              latitude: data.latitude ?? null,
+              longitude: data.longitude ?? null,
               city: data.city,
               state: data.region || "",
               country: data.country_name || "",
@@ -40,8 +40,8 @@ const LocationDetector = () => {
         if (data && data.city && data.city !== "Not found") {
           dispatch(
             updateLocationThunk({
-              latitude: data.latitude || 0,
-              longitude: data.longitude || 0,
+              latitude: data.latitude ?? null,
+              longitude: data.longitude ?? null,
               city: data.city,
               state: data.state || "",
               country: data.country_name || "",

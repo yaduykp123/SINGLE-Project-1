@@ -54,11 +54,8 @@ const VerifyOTP = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex items-center justify-center p-4 relative overflow-hidden selection:bg-emerald-500 selection:text-white">
-      {/* Background Glow Elements */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-600/10 blur-[130px] rounded-full pointer-events-none" />
-
-      <div className="bg-gray-900/60 border border-gray-800/80 backdrop-blur-xl w-full max-w-md p-6 sm:p-8 rounded-2xl shadow-xl relative z-10">
+    <div className="min-h-screen bg-[#f8faf9] dark:bg-[#0b0f19] text-gray-900 dark:text-gray-100 flex items-center justify-center p-4 relative overflow-hidden selection:bg-emerald-500 selection:text-white transition-colors">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 w-full max-w-md p-6 sm:p-8 rounded-2xl shadow-sm relative z-10">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-3">
             <Leaf size={12} /> Security

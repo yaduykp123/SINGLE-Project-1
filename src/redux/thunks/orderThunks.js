@@ -9,8 +9,8 @@ const cache = {
 };
 const CACHE_DURATION = 30 * 1000;
 
-// Fetch my orders (as buyer) — WITH CACHE
-export const fetchMyOrders = (force = false) => async (dispatch) => {
+// Fetch my orders (as buyer) — WITH CACHE & SILENT BACKGROUND SYNC
+export const fetchMyOrders = (force = false, silent = false) => async (dispatch) => {
   const now = Date.now();
   
   if (!force && cache.myOrders.data && (now - cache.myOrders.timestamp) < CACHE_DURATION) {
@@ -18,7 +18,9 @@ export const fetchMyOrders = (force = false) => async (dispatch) => {
     return;
   }
 
-  dispatch(setOrderLoading(true));
+  if (!silent) {
+    dispatch(setOrderLoading(true));
+  }
   try {
     const { data } = await axiosInstance.get("/orders/my-orders");
     cache.myOrders = { data, timestamp: now };
@@ -28,8 +30,8 @@ export const fetchMyOrders = (force = false) => async (dispatch) => {
   }
 };
 
-// Fetch received orders (as seller) — WITH CACHE
-export const fetchReceivedOrders = (force = false) => async (dispatch) => {
+// Fetch received orders (as seller) — WITH CACHE & SILENT BACKGROUND SYNC
+export const fetchReceivedOrders = (force = false, silent = false) => async (dispatch) => {
   const now = Date.now();
   
   if (!force && cache.receivedOrders.data && (now - cache.receivedOrders.timestamp) < CACHE_DURATION) {
@@ -37,7 +39,9 @@ export const fetchReceivedOrders = (force = false) => async (dispatch) => {
     return;
   }
 
-  dispatch(setOrderLoading(true));
+  if (!silent) {
+    dispatch(setOrderLoading(true));
+  }
   try {
     const { data } = await axiosInstance.get("/orders/received");
     cache.receivedOrders = { data, timestamp: now };
@@ -62,14 +66,18 @@ export const createRazorpayOrder = async (amount) => {
 export const verifyAndPlaceOrder = (paymentData) => async (dispatch) => {
   try {
     const { data } = await axiosInstance.post("/orders/verify-payment", paymentData);
-    dispatch(addOrder(data.order));
+    if (data?.order) {
+      dispatch(addOrder(data.order));
+    } else if (data?.orders?.length) {
+      data.orders.forEach((o) => dispatch(addOrder(o)));
+    }
     invalidateOrderCache();
     
     // ✅ Refresh cart so the navbar badge updates immediately
     dispatch(fetchCart());
     
     toast.success("Order placed successfully!");
-    return data.order;
+    return data?.order || data?.orders?.[0];
   } catch (error) {
     toast.error(error.response?.data?.message || "Payment verification failed. Please try again.");
     throw error;

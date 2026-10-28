@@ -21,17 +21,38 @@ const orderSlice = createSlice({
       state.loading = false;
     },
     addOrder: (state, action) => {
-      state.myOrders.unshift(action.payload);
+      const newOrder = action.payload;
+      if (!newOrder?._id) return;
+      const idStr = newOrder._id.toString();
+      const exists = state.myOrders.some((o) => o._id?.toString() === idStr);
+      if (!exists) {
+        state.myOrders.unshift(newOrder);
+      }
+    },
+    addReceivedOrder: (state, action) => {
+      const newOrder = action.payload;
+      if (!newOrder?._id) return;
+      const idStr = newOrder._id.toString();
+      const exists = state.receivedOrders.some((o) => o._id?.toString() === idStr);
+      if (!exists) {
+        state.receivedOrders.unshift(newOrder);
+      }
     },
     updateOrderStatusInState: (state, action) => {
-      const { orderId, status } = action.payload;
+      const { orderId, status, order } = action.payload;
       const idStr = orderId?.toString();
-      state.receivedOrders = state.receivedOrders.map((o) =>
-        (o._id?.toString() === idStr || o._id === orderId) ? { ...o, status } : o
-      );
-      state.myOrders = state.myOrders.map((o) =>
-        (o._id?.toString() === idStr || o._id === orderId) ? { ...o, status } : o
-      );
+      state.receivedOrders = state.receivedOrders.map((o) => {
+        if (o._id?.toString() === idStr || o._id === orderId) {
+          return order ? { ...o, ...order, status } : { ...o, status };
+        }
+        return o;
+      });
+      state.myOrders = state.myOrders.map((o) => {
+        if (o._id?.toString() === idStr || o._id === orderId) {
+          return order ? { ...o, ...order, status } : { ...o, status };
+        }
+        return o;
+      });
     },
     setOrderLoading: (state, action) => {
       state.loading = action.payload;
@@ -63,6 +84,7 @@ export const {
   setMyOrders,
   setReceivedOrders,
   addOrder,
+  addReceivedOrder,
   updateOrderStatusInState,
   setOrderLoading,
   setOrderError,

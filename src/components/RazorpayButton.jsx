@@ -13,6 +13,8 @@ const RazorpayButton = ({
   validateShipping,
   offerId,
   isCart = false,
+  isCombo = false,
+  comboId,
 }) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -56,6 +58,8 @@ const RazorpayButton = ({
         quantity,
         offerId,
         isCart,
+        isCombo,
+        comboId,
       });
 
       if (!order?.id) {
@@ -68,12 +72,12 @@ const RazorpayButton = ({
         amount: order.amount,
         currency: order.currency || "INR",
         name: "expireOff",
-        description: isCart ? "Cart Items Purchase" : "Product Purchase",
+        description: isCombo ? "Combo Package Purchase" : isCart ? "Cart Items Purchase" : "Product Purchase",
         order_id: order.id,
         handler: async (response) => {
           try {
             // Verify payment on backend
-            await dispatch(
+            const confirmedOrder = await dispatch(
               verifyAndPlaceOrder({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -83,12 +87,16 @@ const RazorpayButton = ({
                 shippingAddress,
                 offerId,
                 isCart,
+                isCombo,
+                comboId,
               }),
             );
-            toast.success("Order placed successfully!");
-            onSuccess();
+            setLoading(false);
+            if (onSuccess) {
+              onSuccess(confirmedOrder);
+            }
           } catch {
-            toast.error("Payment verification failed");
+            setLoading(false);
           }
         },
         prefill: {

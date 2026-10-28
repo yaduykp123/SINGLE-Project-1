@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchOffers, createOfferThunk, deleteOfferThunk } from "../redux/slices/offerSlice";
 import { fetchMyListings } from "../redux/thunks/productThunks";
 import { Tag, Sparkles, Clock, Store, Plus, Trash2, X, AlertCircle, Package, Check, Navigation } from "lucide-react";
+import ProductImage from "../components/ProductImage";
 import toast from "react-hot-toast";
 
 const CATEGORIES = ["All", "Grocery Items", "Fruits", "Vegetables", "Meat/Fish", "Dairy", "Other"];
@@ -11,6 +12,8 @@ const CATEGORIES = ["All", "Grocery Items", "Fruits", "Vegetables", "Meat/Fish",
 const Offers = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const targetOfferId = searchParams.get("offerId");
   const { user } = useSelector((state) => state.auth);
   const { offers, loading, error } = useSelector((state) => state.offers);
   const { myListings } = useSelector((state) => state.product);
@@ -34,6 +37,15 @@ const Offers = () => {
       dispatch(fetchMyListings());
     }
   }, [dispatch, user?.latitude, user?.longitude, user?.accountType]);
+
+  useEffect(() => {
+    if (targetOfferId && offers.length > 0) {
+      const el = document.getElementById(`offer-${targetOfferId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [targetOfferId, offers.length]);
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -94,23 +106,23 @@ const Offers = () => {
   const isShopOwner = user?.accountType === "shop";
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-gray-100 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f8faf9] text-gray-900 dark:bg-[#0b0f17] dark:text-gray-100 py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800/80 pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-800/80 pb-6">
           <div>
-            <div className="flex items-center gap-2 text-emerald-400 text-sm font-bold uppercase tracking-widest mb-1">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-widest mb-1">
               <Sparkles size={16} />
               <span>Exclusive Local Deals</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Active Store Offers</h1>
-            <p className="text-xs text-gray-400 mt-1">Only showing offers within delivery range of {user?.city || "your location"}</p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Active Store Offers</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Only showing offers within delivery range of {user?.city || "your location"}</p>
           </div>
 
           {isShopOwner && (
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95"
+              className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
             >
               <Plus size={18} />
               <span>Post New Offer</span>
@@ -118,24 +130,24 @@ const Offers = () => {
           )}
         </div>
 
-        {loading && (
+        {loading && offers.length === 0 && (
           <div className="flex justify-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
           </div>
         )}
 
         {error && (
-          <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-2xl flex items-center gap-3">
+          <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/30 dark:text-rose-400 rounded-2xl flex items-center gap-3">
             <AlertCircle size={20} />
             <span>{error}</span>
           </div>
         )}
 
         {!loading && offers.length === 0 && (
-          <div className="text-center py-20 bg-[#111827]/60 border border-gray-800 rounded-3xl p-8">
-            <Tag size={48} className="mx-auto text-gray-600 mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">No Active Offers Nearby</h3>
-            <p className="text-gray-400 text-sm max-w-md mx-auto">
+          <div className="text-center py-20 bg-white border border-gray-200 shadow-sm dark:bg-[#111827]/60 dark:border-gray-800 rounded-3xl p-8">
+            <Tag size={48} className="mx-auto text-gray-400 dark:text-gray-600 mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Active Offers Nearby</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
               Check back soon! Local stores post new deals frequently within your area.
             </p>
           </div>
@@ -148,33 +160,39 @@ const Offers = () => {
             .map((offer) => {
             const isMine = user && (offer.shopOwner?._id === user._id || offer.shopOwner === user._id);
             const daysLeft = Math.ceil((new Date(offer.expiresAt) - new Date()) / (1000 * 60 * 60 * 24));
+            const isTarget = Boolean(targetOfferId && offer._id?.toString() === targetOfferId);
 
             return (
               <div
                 key={offer._id}
-                className="group relative bg-[#111827]/80 border border-gray-800/80 hover:border-emerald-500/50 rounded-3xl p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col"
+                id={`offer-${offer._id}`}
+                className={`group relative bg-white border shadow-sm hover:shadow-md dark:bg-[#111827]/80 rounded-3xl p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 flex flex-col ${
+                  isTarget
+                    ? "border-emerald-500 ring-2 ring-emerald-500 shadow-xl shadow-emerald-500/20"
+                    : "border-gray-200/80 hover:border-emerald-400 dark:border-gray-800/80 dark:hover:border-emerald-500/50"
+                }`}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="flex items-center gap-1.5 px-3 py-1 bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-black uppercase tracking-wider rounded-xl">
+                    <span className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-500/20 dark:border-rose-500/30 dark:text-rose-300 text-xs font-black uppercase tracking-wider rounded-xl">
                       <Tag size={12} />
                       {offer.discountPercentage}% OFF
                     </span>
                     {offer.category !== "All" && (
-                      <span className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-xl">
+                      <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400 text-xs font-bold rounded-xl">
                         {offer.category}
                       </span>
                     )}
                     {offer.distanceKm !== undefined && (
-                      <span className="flex items-center gap-1 text-xs text-gray-300 bg-gray-800 border border-gray-700 px-2 py-1 rounded-lg">
-                        <Navigation size={12} className="text-emerald-400" />
+                      <span className="flex items-center gap-1 text-xs text-gray-700 bg-gray-100 border border-gray-200 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-700 px-2 py-1 rounded-lg">
+                        <Navigation size={12} className="text-emerald-600 dark:text-emerald-400" />
                         {offer.distanceKm} km
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     {daysLeft >= 0 && (
-                      <span className="flex items-center gap-1 text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-xl">
+                      <span className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20 px-2.5 py-1 rounded-xl">
                         <Clock size={12} />
                         {daysLeft === 0 ? "Ends Today" : `${daysLeft}d left`}
                       </span>
@@ -182,7 +200,7 @@ const Offers = () => {
                     {(isMine || user?.isAdmin) && (
                       <button
                         onClick={(e) => handleDeleteOffer(offer._id, e)}
-                        className="p-1.5 text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:text-gray-500 dark:hover:text-rose-400 dark:hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                         title="Delete offer"
                       >
                         <Trash2 size={16} />
@@ -191,10 +209,10 @@ const Offers = () => {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-white group-hover:text-emerald-300 transition-colors mb-2">
+                <h3 className="text-xl font-bold text-gray-900 group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-300 transition-colors mb-2">
                   {offer.title}
                 </h3>
-                <p className="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-2">
+                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-4 line-clamp-2">
                   {offer.description}
                 </p>
 
@@ -211,19 +229,21 @@ const Offers = () => {
                           onClick={() => navigate(`/checkout/${product._id}?offerId=${offer._id}`)}
                           className="flex-shrink-0 w-20 cursor-pointer group/prod text-center"
                         >
-                          <div className="relative">
-                            <img
-                              src={product.image || "https://via.placeholder.com/64"}
+                          <div className="relative w-20 h-20 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                            <ProductImage
+                              src={product.image}
                               alt={product.name}
-                              className="w-20 h-20 object-cover rounded-xl border border-gray-800 group-hover/prod:border-emerald-500/40 transition-all"
+                              category={product.category}
+                              className="w-full h-full object-cover"
+                              iconSize={18}
                             />
                             {product.offerPrice && (
-                              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-emerald-500 text-gray-950 text-[9px] font-black px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-emerald-600 text-white dark:bg-emerald-500 dark:text-gray-950 text-[9px] font-black px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-sm">
                                 ₹{product.offerPrice}
                               </span>
                             )}
                           </div>
-                          <p className="text-[10px] text-gray-400 mt-2 truncate group-hover/prod:text-emerald-300">
+                          <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-2 truncate group-hover/prod:text-emerald-700 dark:group-hover/prod:text-emerald-300">
                             {product.name}
                           </p>
                         </div>
@@ -232,17 +252,45 @@ const Offers = () => {
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-gray-800/80 flex items-center justify-between text-xs text-gray-400 mt-auto">
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-800/80 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-auto">
                   <div className="flex items-center gap-1.5">
-                    <Store size={14} className="text-emerald-400" />
-                    <span className="font-semibold text-gray-300">
+                    <Store size={14} className="text-emerald-600 dark:text-emerald-400" />
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">
                       {offer.shopOwner?.fullName || "Local Store"}
                     </span>
                   </div>
-                  <span className="text-emerald-400 font-bold">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                     {offer.products?.length || 0} product{offer.products?.length !== 1 ? "s" : ""}
                   </span>
                 </div>
+
+                {offer.products?.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/checkout/combo?comboId=${offer._id}`);
+                    }}
+                    className="w-full mt-3 py-2.5 px-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-400/20 hover:scale-[1.01] active:scale-[0.99]"
+                  >
+                    <Package size={15} />
+                    <span>
+                      Buy Combo Pack ({offer.products.length} Items) • ₹
+                      {offer.products.reduce(
+                        (sum, p) =>
+                          sum +
+                          (p.offerPrice ||
+                            Math.max(
+                              1,
+                              Math.round(
+                                (p.discountPrice || p.marketPrice || 0) *
+                                  (1 - offer.discountPercentage / 100)
+                              )
+                            )),
+                        0
+                      )}
+                    </span>
+                  </button>
+                )}
               </div>
             );
           })}
@@ -251,82 +299,82 @@ const Offers = () => {
 
       {/* Create Offer Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[#111827] border border-gray-800 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 md:p-8 shadow-2xl relative">
-            <button onClick={() => setShowModal(false)} className="absolute top-5 right-5 text-gray-400 hover:text-white p-1 rounded-xl hover:bg-gray-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md">
+          <div className="bg-white border border-gray-200 dark:bg-[#111827] dark:border-gray-800 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 md:p-8 shadow-2xl relative text-gray-900 dark:text-white">
+            <button onClick={() => setShowModal(false)} className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 dark:hover:text-white p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
               <X size={20} />
             </button>
 
-            <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-              <Sparkles size={24} className="text-emerald-400" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+              <Sparkles size={24} className="text-emerald-600 dark:text-emerald-400" />
               Post New Offer
             </h2>
-            <p className="text-gray-400 text-xs mb-6">
+            <p className="text-gray-500 dark:text-gray-400 text-xs mb-6">
               Select products and set a discount. Nearby buyers will see exact final prices.
             </p>
 
             <form onSubmit={handleCreateOffer} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Offer Title *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-1.5">Offer Title *</label>
                 <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g. Weekend Dairy Sale"
-                  className="w-full bg-[#0b0f17] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500" />
+                  className="w-full bg-white dark:bg-[#0b0f17] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-emerald-500" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Category Tag</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-1.5">Category Tag</label>
                   <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full bg-[#0b0f17] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    className="w-full bg-white dark:bg-[#0b0f17] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500 cursor-pointer">
                     {CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Discount % *</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-1.5">Discount % *</label>
                   <input type="number" min="1" max="99" required value={formData.discountPercentage}
                     onChange={(e) => setFormData({ ...formData, discountPercentage: e.target.value })}
-                    className="w-full bg-[#0b0f17] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                    className="w-full bg-white dark:bg-[#0b0f17] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Usage Limit</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-1.5">Usage Limit</label>
                   <input type="number" min="1" placeholder="Unlimited" value={formData.usageLimit}
                     onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
-                    className="w-full bg-[#0b0f17] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500" />
+                    className="w-full bg-white dark:bg-[#0b0f17] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-emerald-500" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Min Order (₹)</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-1.5">Min Order (₹)</label>
                   <input type="number" min="0" placeholder="0" value={formData.minOrderValue}
                     onChange={(e) => setFormData({ ...formData, minOrderValue: e.target.value })}
-                    className="w-full bg-[#0b0f17] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500" />
+                    className="w-full bg-white dark:bg-[#0b0f17] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Valid Until *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-1.5">Valid Until *</label>
                 <input type="date" required value={formData.expiresAt}
                   min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                  className="w-full bg-[#0b0f17] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                  className="w-full bg-white dark:bg-[#0b0f17] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500" />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Description *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-1.5">Description *</label>
                 <textarea rows="3" required value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe the offer..."
-                  className="w-full bg-[#0b0f17] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500" />
+                  className="w-full bg-white dark:bg-[#0b0f17] border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-emerald-500" />
               </div>
 
               {/* Product Selector — Filtered by selected Category Tag */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-400">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-400">
                     Select Products *
                   </label>
                   {formData.category !== "All" && (
-                    <span className="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 font-medium">
+                    <span className="text-[11px] text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-500/20 font-medium">
                       Category: {formData.category}
                     </span>
                   )}
@@ -344,11 +392,11 @@ const Offers = () => {
 
                     if (filteredListings.length === 0) {
                       return (
-                        <div className="p-4 bg-[#0b0f17] border border-gray-800 rounded-xl text-center">
-                          <p className="text-xs text-gray-400">
+                        <div className="p-4 bg-gray-50 border border-gray-200 dark:bg-[#0b0f17] dark:border-gray-800 rounded-xl text-center">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             No active {formData.category !== "All" ? `"${formData.category}"` : ""} products found.
                           </p>
-                          <p className="text-[10px] text-gray-500 mt-1">
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                             Select another category or add products under "{formData.category}".
                           </p>
                         </div>
@@ -356,7 +404,7 @@ const Offers = () => {
                     }
 
                     return (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-52 overflow-y-auto p-2 bg-[#0b0f17] border border-gray-800 rounded-xl">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-52 overflow-y-auto p-2 bg-gray-50 border border-gray-200 dark:bg-[#0b0f17] dark:border-gray-800 rounded-xl">
                         {filteredListings.map((product) => {
                           const isSelected = selectedProductIds.includes(product._id);
                           return (
@@ -364,17 +412,21 @@ const Offers = () => {
                               key={product._id}
                               type="button"
                               onClick={() => toggleProductSelection(product._id)}
-                              className={`relative p-2 rounded-xl border transition-all text-left ${
-                                isSelected ? "border-emerald-500 bg-emerald-500/10" : "border-gray-800 hover:border-gray-700"
+                              className={`relative p-2 rounded-xl border transition-all text-left cursor-pointer ${
+                                isSelected ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10" : "border-gray-200 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700 bg-white dark:bg-transparent"
                               }`}
                             >
-                              <img
-                                src={product.image || "https://via.placeholder.com/64"}
-                                alt={product.name}
-                                className="w-full h-12 object-cover rounded-lg mb-1"
-                              />
-                              <p className="text-[10px] text-gray-300 truncate">{product.name}</p>
-                              <p className="text-[9px] text-emerald-400 font-bold">₹{getPreviewPrice(product)}</p>
+                              <div className="w-full h-12 rounded-lg mb-1 overflow-hidden bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                                <ProductImage
+                                  src={product.image}
+                                  alt={product.name}
+                                  category={product.category}
+                                  className="w-full h-full object-cover"
+                                  iconSize={16}
+                                />
+                              </div>
+                              <p className="text-[10px] text-gray-700 dark:text-gray-300 truncate">{product.name}</p>
+                              <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">₹{getPreviewPrice(product)}</p>
                               {isSelected && (
                                 <div className="absolute top-1 right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
                                   <Check size={10} className="text-white" />
@@ -392,9 +444,9 @@ const Offers = () => {
 
               <div className="pt-2 flex justify-end gap-3">
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white rounded-xl hover:bg-gray-800">Cancel</button>
+                  className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">Cancel</button>
                 <button type="submit" disabled={submitting}
-                  className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xs rounded-xl shadow-lg transition-all disabled:opacity-50">
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all disabled:opacity-50 cursor-pointer">
                   {submitting ? "Broadcasting..." : "Broadcast Offer"}
                 </button>
               </div>

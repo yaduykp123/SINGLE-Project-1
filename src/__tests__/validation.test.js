@@ -33,9 +33,31 @@ describe('Validation Utils', () => {
   describe('Phone', () => {
     it('validates Indian phone numbers', () => {
       expect(isValidPhone('9876543210')).toBe(true);
+      expect(isValidPhone('8123456789')).toBe(true);
+      expect(isValidPhone('7012345678')).toBe(true);
+      expect(isValidPhone('6234567890')).toBe(true);
       expect(isValidPhone('+91 9876543210')).toBe(true);
-      expect(isValidPhone('1234567890')).toBe(false);
-      expect(isValidPhone('987654321')).toBe(false);
+      expect(isValidPhone('+91-9876543210')).toBe(true);
+      expect(isValidPhone('+919876543210')).toBe(true);
+    });
+
+    it('rejects invalid numbers, incorrect lengths, and non-Indian formats', () => {
+      expect(isValidPhone('1234567890')).toBe(false); // starts with 1
+      expect(isValidPhone('5555555555')).toBe(false); // starts with 5
+      expect(isValidPhone('987654321')).toBe(false);  // 9 digits
+      expect(isValidPhone('98765432100')).toBe(false); // 11 digits
+      expect(isValidPhone('abcdefghij')).toBe(false);
+      expect(isValidPhone('')).toBe(false);
+      expect(isValidPhone(null)).toBe(false);
+      expect(isValidPhone(undefined)).toBe(false);
+    });
+
+    it('returns appropriate phone error messages', () => {
+      expect(getPhoneError('')).toBe('Phone number is required');
+      expect(getPhoneError('12345')).toBe('Phone number must be at least 10 digits');
+      expect(getPhoneError('98765432100000')).toBe('Phone number exceeds maximum length (10 digits)');
+      expect(getPhoneError('1234567890')).toBe('Enter valid 10-digit Indian mobile number (starts with 6, 7, 8, or 9)');
+      expect(getPhoneError('9876543210')).toBeNull();
     });
   });
 

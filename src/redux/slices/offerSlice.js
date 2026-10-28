@@ -50,8 +50,16 @@ const offerSlice = createSlice({
       state.loading = false;
     },
     removeOffer: (state, action) => {
-      state.offers = state.offers.filter((o) => o._id !== action.payload);
-      state.myOffers = state.myOffers.filter((o) => o._id !== action.payload);
+      const targetId = action.payload?.toString();
+      state.offers = state.offers.filter((o) => o._id?.toString() !== targetId);
+      state.myOffers = state.myOffers.filter((o) => o._id?.toString() !== targetId);
+    },
+    updateOfferInState: (state, action) => {
+      const updated = action.payload;
+      if (!updated?._id) return;
+      const idStr = updated._id.toString();
+      state.offers = state.offers.map((o) => (o._id?.toString() === idStr ? { ...o, ...updated } : o));
+      state.myOffers = state.myOffers.map((o) => (o._id?.toString() === idStr ? { ...o, ...updated } : o));
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
@@ -72,6 +80,7 @@ export const {
   setCurrentOffer,
   addOffer,
   removeOffer,
+  updateOfferInState,
   setLoading,
   setError,
   clearError,

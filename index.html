@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/Images/LOGO_ExpireOFF-cropped-favicon.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/Images/LOGO_ExpireOFF-cropped-favicon.png" />
-    <link rel="shortcut icon" href="/favicon.png" />
+    <link rel="icon" type="image/png" href="/Images/fresh-produce-clock.png" />
+    <link rel="apple-touch-icon" href="/Images/fresh-produce-clock.png" />
+    <link rel="shortcut icon" href="/Images/fresh-produce-clock.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>expireOff - Prevent Food Waste</title>
 
@@ -17,6 +17,19 @@
     />
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem("expireoff-theme");
+          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (saved === "dark" || (!saved && prefersDark)) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

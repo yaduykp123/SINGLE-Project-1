@@ -19,9 +19,9 @@ export const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
   const storeLat = Number(lat2);
   const storeLon = Number(lon2);
 
-  // Fallback to 2.5 km default distance if coordinates are missing or zero
+  // If coordinates are missing, zero, or invalid, do not invent distance
   if (!userLat || !userLon || !storeLat || !storeLon) {
-    return 2.5;
+    return null;
   }
 
   const EARTH_RADIUS_KM = 6371; // Earth's radius in kilometers
@@ -53,10 +53,21 @@ export const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
  * @param {number} userLon
  * @param {number} storeLat
  * @param {number} storeLon
- * @returns {object} { distanceKm, estimatedMins, formattedTime, badgeText }
+ * @returns {object} { distanceKm, isAvailable, distanceText, estimatedMins, formattedTime, badgeText }
  */
 export const getDeliveryTimeInfo = (userLat, userLon, storeLat, storeLon) => {
   const distanceKm = calculateDistanceKm(userLat, userLon, storeLat, storeLon);
+
+  if (distanceKm === null) {
+    return {
+      distanceKm: null,
+      isAvailable: false,
+      distanceText: "Distance unavailable",
+      estimatedMins: null,
+      formattedTime: "Standard Delivery",
+      badgeText: "🚚 Standard Delivery",
+    };
+  }
 
   const BASE_PREP_MINS = 15; // 15 mins store packing
   const TRAVEL_MINS_PER_KM = 3; // 3 mins per kilometer
@@ -76,6 +87,8 @@ export const getDeliveryTimeInfo = (userLat, userLon, storeLat, storeLon) => {
 
   return {
     distanceKm,
+    isAvailable: true,
+    distanceText: `${distanceKm} km away`,
     estimatedMins: totalMins,
     formattedTime,
     badgeText,
@@ -89,18 +102,23 @@ export const getDeliveryTimeInfo = (userLat, userLon, storeLat, storeLon) => {
  * @returns {object} { progressPercent, statusLabel, etaText }
  */
 export const getOrderStatusProgress = (status, estimatedMins = 25) => {
+  const effectiveMins =
+    estimatedMins !== null && !isNaN(Number(estimatedMins))
+      ? Number(estimatedMins)
+      : 25;
+
   switch (status) {
     case "pending":
       return {
         progressPercent: 25,
         statusLabel: "Order Received & Preparing",
-        etaText: `Est. Arrival in ~${estimatedMins} mins`,
+        etaText: `Est. Arrival in ~${effectiveMins} mins`,
       };
     case "confirmed":
       return {
         progressPercent: 50,
         statusLabel: "Packed & Ready for Pickup",
-        etaText: `Est. Arrival in ~${Math.max(10, estimatedMins - 10)} mins`,
+        etaText: `Est. Arrival in ~${Math.max(10, effectiveMins - 10)} mins`,
       };
     case "shipped":
       return {
@@ -124,7 +142,7 @@ export const getOrderStatusProgress = (status, estimatedMins = 25) => {
       return {
         progressPercent: 20,
         statusLabel: "Processing Order",
-        etaText: `~${estimatedMins} mins`,
+        etaText: `~${effectiveMins} mins`,
       };
   }
 };
